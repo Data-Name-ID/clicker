@@ -282,7 +282,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'singularity',
     name: 'Сингулярность',
-    description: 'Награда перелёта: каждые 40 ядер (вместо 50) удваивают тёмную материю',
+    description: 'Ядра сильнее усиливают награду перелёта (порог 50 → 40)',
     effect: { target: 'special' },
     cost: { core: 10_000 },
     requirement: '3 перелёта',

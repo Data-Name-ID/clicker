@@ -16,7 +16,8 @@ export function coreDivisor(state: GameState): number {
   return divisor
 }
 
-export const coreMultiplier = (state: GameState): number => 1 + state.stats.runCores / coreDivisor(state)
+export const coreMultiplier = (state: GameState): number =>
+  1 + Math.sqrt(Math.max(0, state.stats.runCores) / coreDivisor(state))
 
 export const darkMatterGain = (state: GameState): number =>
   Math.floor(Math.sqrt(state.stats.runChips / 1000) * coreMultiplier(state))

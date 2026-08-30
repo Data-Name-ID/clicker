@@ -73,7 +73,11 @@ describe('core multiplier', () => {
     const state = buildState({ upgrades: ['singularity'], stats: { runChips: 10_000, runCores: 50 } })
 
     expect(coreDivisor(state)).toBe(40)
-    expect(darkMatterGain(state)).toBe(7)
+    expect(darkMatterGain(state)).toBe(6)
+  })
+
+  it('damps huge core farms', () => {
+    expect(darkMatterGain(buildState({ stats: { runChips: 10_000, runCores: 2000 } }))).toBe(23)
   })
 
   it('dark seed lowers the divisor to 35', () => {

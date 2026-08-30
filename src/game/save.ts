@@ -3,6 +3,9 @@ import { BUILDING_IDS } from './content/buildings'
 import { UPGRADES } from './content/upgrades'
 import { simulateChunked } from './tick'
 import { ARTIFACTS } from './content/artifacts'
+import { CHALLENGES } from './content/challenges'
+import { EXPEDITION_KINDS, EXPEDITION_PARTY_SIZES } from './content/expeditions'
+import { TALENTS } from './content/talents'
 import { EVENTS } from './content/events'
 import { SHIP_UPGRADES } from './content/ship'
 import { hasShip } from './content/ship'
@@ -12,8 +15,12 @@ import {
   type ArtifactId,
   type EventId,
   type GameState,
+  type ChallengeId,
+  type Expedition,
+  type ExpeditionKind,
   type ProtocolId,
   type Resources,
+  type TalentId,
   type ThemeId,
   type ShipUpgradeId,
   type TutorialStepId,
@@ -21,7 +28,7 @@ import {
 } from './types'
 
 export const SAVE_KEY = 'asteroid7:save'
-export const SAVE_VERSION = 3
+export const SAVE_VERSION = 4
 export const OFFLINE_MIN_SECONDS = 60
 export const OFFLINE_CAP_SECONDS = 8 * 60 * 60
 export const OFFLINE_CAP_EXTENDED_SECONDS = 24 * 60 * 60
@@ -33,6 +40,7 @@ type Raw = Record<string, unknown>
 const migrations: Record<number, (raw: Raw) => Raw> = {
   1: (raw) => raw,
   2: (raw) => raw,
+  3: (raw) => raw,
 }
 
 export class SaveError extends Error {}
@@ -70,6 +78,8 @@ const SHIP_IDS: ShipUpgradeId[] = SHIP_UPGRADES.map((u) => u.id)
 const EVENT_IDS: EventId[] = EVENTS.map((e) => e.id)
 const PROTOCOLS: ProtocolId[] = ['balance', 'mining', 'factory']
 const THEMES: ThemeId[] = ['classic', 'void', 'nebula', 'terminal']
+const CHALLENGE_IDS: ChallengeId[] = CHALLENGES.map((c) => c.id)
+const EXPEDITION_KIND_IDS: ExpeditionKind[] = EXPEDITION_KINDS.map((k) => k.kind)
 
 function normalize(raw: Raw): GameState {
   const base = createInitialState()
@@ -116,6 +126,9 @@ function normalize(raw: Raw): GameState {
       comboBest: num(stats.comboBest, 0),
       discharges: num(stats.discharges, 0),
       questsCompleted: num(stats.questsCompleted, 0),
+      totalPrestiges: Math.max(num(stats.totalPrestiges, num(raw.prestigeCount, 0)), 0),
+      expeditionsDone: num(stats.expeditionsDone, 0),
+      expeditionsFailed: num(stats.expeditionsFailed, 0),
     },
     effects: {
       boostRemaining: Math.max(0, num(effects.boostRemaining, 0)),
@@ -144,6 +157,13 @@ function normalize(raw: Raw): GameState {
     lastClickAt: num(raw.lastClickAt, 0),
     charge: Math.min(100, Math.max(0, num(raw.charge, 0))),
     quest: normalizeQuest(raw.quest),
+    shards: Math.max(0, num(raw.shards, 0)),
+    galaxyCount: Math.max(0, Math.floor(num(raw.galaxyCount, 0))),
+    talents: normalizeTalents(raw.talents),
+    challenge: normalizeChallenge(raw.challenge),
+    challengesDone: ids(raw.challengesDone, CHALLENGE_IDS),
+    expeditions: normalizeExpeditions(raw.expeditions),
+    autoPrestigeAt: Math.max(0, num(raw.autoPrestigeAt, 0)),
     theme: THEMES.includes(raw.theme as ThemeId) ? (raw.theme as ThemeId) : 'classic',
     asteroidSkin:
       typeof raw.asteroidSkin === 'number' && Number.isInteger(raw.asteroidSkin) && raw.asteroidSkin >= 0
@@ -162,6 +182,35 @@ function normalizeQuest(v: unknown): GameState['quest'] {
     baseline: num(q.baseline, 0),
     goal: Math.max(0, num(q.goal, 0)),
   }
+}
+
+function normalizeTalents(v: unknown): GameState['talents'] {
+  const raw = record(v)
+  const result: GameState['talents'] = {}
+  for (const def of TALENTS) {
+    const level = Math.floor(num(raw[def.id], 0))
+    if (level > 0) result[def.id as TalentId] = Math.min(level, def.maxLevel)
+  }
+  return result
+}
+
+function normalizeChallenge(v: unknown): GameState['challenge'] {
+  if (!isRecord(v)) return null
+  if (!CHALLENGE_IDS.includes(v.id as ChallengeId)) return null
+  return { id: v.id as ChallengeId, startedAt: num(v.startedAt, 0) }
+}
+
+function normalizeExpeditions(v: unknown): Expedition[] {
+  if (!Array.isArray(v)) return []
+  const result: Expedition[] = []
+  for (const item of v) {
+    if (!isRecord(item)) continue
+    if (!EXPEDITION_KIND_IDS.includes(item.kind as ExpeditionKind)) continue
+    const drones = Math.floor(num(item.drones, 0))
+    if (!EXPEDITION_PARTY_SIZES.includes(drones)) continue
+    result.push({ kind: item.kind as ExpeditionKind, drones, endsAt: num(item.endsAt, 0) })
+  }
+  return result
 }
 
 function normalizeEvent(v: unknown): GameState['effects']['event'] {

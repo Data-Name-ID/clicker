@@ -6,7 +6,21 @@ import { achievementDef } from '../game/content/achievements'
 import { pickArtifact, rerollArtifact, artifactDef } from '../game/content/artifacts'
 import { eventDef } from '../game/content/events'
 import { buyShipUpgrade, shipUpgradeDef } from '../game/content/ship'
-import { applyDischarge, buyBuilding, buyUpgrade, performClick, setProtocol } from '../game/economy'
+import { buyTalent, talentLevel } from '../game/content/talents'
+import { challengeDef } from '../game/content/challenges'
+import { availableUpgrades } from '../game/content/upgrades'
+import {
+  applyGalaxyReset,
+  canGalaxyReset,
+  challengeOutcomeOnPrestige,
+  exitChallenge,
+  settleChallenge,
+  shardsGain,
+  startChallenge,
+} from '../game/galaxy'
+import { collectExpedition, startExpedition } from '../game/expeditions'
+import { applyDischarge, buyBuilding, buyUpgrade, canAfford, costOf, isBuildingVisible, performClick, setProtocol } from '../game/economy'
+import { BUILDING_IDS } from '../game/content/buildings'
 import { checkQuests } from '../game/quests'
 import {
   acceptBlackMarket,
@@ -46,9 +60,12 @@ import {
   zeroResources,
   type BuildingId,
   type GameState,
+  type ChallengeId,
+  type ExpeditionKind,
   type ProtocolId,
   type Resources,
   type ShipUpgradeId,
+  type TalentId,
   type ThemeId,
   type UpgradeId,
 } from '../game/types'
@@ -94,6 +111,7 @@ export interface GameStore {
   catBoxOpen: boolean
   discoUntil: number
   shakeSeq: number
+  autoBuyerOn: boolean
   click(rhythmBonus?: boolean): ClickFeedback
   discharge(): void
   buy(id: BuildingId, count: number | 'max'): void
@@ -123,6 +141,14 @@ export interface GameStore {
   setTab(tab: TabId): void
   setTheme(theme: ThemeId): void
   setAsteroidSkin(skin: number | null): void
+  galaxyReset(): void
+  buyTalent(id: TalentId): void
+  startChallenge(id: ChallengeId): void
+  exitChallenge(): void
+  setAutoPrestigeAt(value: number): void
+  setAutoBuyer(on: boolean): void
+  startExpedition(kind: ExpeditionKind, drones: number): void
+  collectExpedition(index: number): void
   start(): void
   notify(kind: ToastKind, title: string, text?: string): void
   dismissToast(id: number): void
@@ -171,6 +197,29 @@ export function createGameStore({
       })
     }
 
+    const doPrestige = (game: GameState, gain: number) => {
+      const now = clock()
+      const outcome = challengeOutcomeOnPrestige(game, now)
+      let after = applyPrestige(game, gain, now)
+      if (outcome) {
+        after = settleChallenge(after, outcome)
+      } else {
+        after = pickArtifact(after, random())
+      }
+      commit(after)
+      pushToast('info', 'Перелёт завершён', `+${gain} тёмной материи`)
+      if (outcome) {
+        if (outcome.success) {
+          pushToast('event', `Испытание «${outcome.name}» пройдено`, outcome.shards > 0 ? `+${outcome.shards} осколков` : 'Награда уже получена')
+        } else {
+          pushToast('error', `Испытание «${outcome.name}» провалено`, 'Время вышло')
+        }
+      } else if (after.artifact) {
+        const def = artifactDef(after.artifact)
+        pushToast('event', `Артефакт: ${def.name}`, def.description)
+      }
+    }
+
     const fresh = (now: number) => {
       const game: GameState = {
         ...createInitialState(),
@@ -195,6 +244,7 @@ export function createGameStore({
       catBoxOpen: false,
       discoUntil: 0,
       shakeSeq: 0,
+      autoBuyerOn: true,
 
       click: (rhythmBonus = false) => {
         const result = performClick(get().game, clock(), random(), rhythmBonus ? 2 : 1)
@@ -239,14 +289,7 @@ export function createGameStore({
       prestige: () => {
         const { game } = get()
         if (!canPrestige(game)) return
-        const gain = darkMatterGain(game)
-        const after = pickArtifact(applyPrestige(game, gain, clock()), random())
-        commit(after)
-        pushToast('info', 'Перелёт завершён', `+${gain} тёмной материи`)
-        if (after.artifact) {
-          const def = artifactDef(after.artifact)
-          pushToast('event', `Артефакт: ${def.name}`, def.description)
-        }
+        doPrestige(game, darkMatterGain(game))
       },
 
       tick: (now) => {
@@ -265,6 +308,25 @@ export function createGameStore({
         next = tickLive(next, dt, new Date(now).getHours())
         const eventResult = tickEvents(next, dt, [random(), random()])
         next = eventResult.state
+        if (talentLevel(next, 'autoEvents') > 0) {
+          if (next.effects.event?.id === 'caravan') next = acceptCaravan(next)
+          else if (next.effects.event?.id === 'blackMarket') next = acceptBlackMarket(next)
+        }
+        if (talentLevel(next, 'autoBuyer') > 0 && get().autoBuyerOn) {
+          let cheapest: { id: (typeof BUILDING_IDS)[number]; weight: number } | null = null
+          for (const id of BUILDING_IDS) {
+            if (!isBuildingVisible(next, id)) continue
+            const cost = costOf(next, id, next.buildings[id], 1)
+            if (!canAfford(next.resources, cost)) continue
+            const weight = (cost.ore ?? 0) + (cost.alloy ?? 0) * 4 + (cost.chip ?? 0) * 20 + (cost.core ?? 0) * 400
+            if (!cheapest || weight < cheapest.weight) cheapest = { id, weight }
+          }
+          if (cheapest) next = buyBuilding(next, cheapest.id, 1) ?? next
+        }
+        if (talentLevel(next, 'autoUpgrades') > 0) {
+          const target = availableUpgrades(next).find((u) => canAfford(next.resources, u.cost))
+          if (target) next = buyUpgrade(next, target.id) ?? next
+        }
         const extra: Partial<GameStore> = { lastTick: now, now }
         if (next.catCountdown <= 0 && !catVisible && !get().catBoxOpen) {
           extra.catVisible = true
@@ -276,11 +338,21 @@ export function createGameStore({
           const def = eventDef(eventResult.started)
           pushToast('event', def.name, def.description)
         }
+        const after = get().game
+        if (
+          talentLevel(after, 'autoPrestige') > 0 &&
+          after.autoPrestigeAt > 0 &&
+          canPrestige(after) &&
+          darkMatterGain(after) >= after.autoPrestigeAt
+        ) {
+          doPrestige(after, darkMatterGain(after))
+        }
       },
 
       watchAd: async (placement) => {
         const { game, adBusy } = get()
         const now = clock()
+        if (game.challenge?.id === 'ascetic') return
         if (adBusy || !ads.isAvailable(placement) || cooldownRemaining(game, placement, now) > 0) return
         if (placement === 'prestigeBonus' && !canPrestige(game)) return
         if (placement === 'offlineDouble' && !get().offline) return
@@ -340,14 +412,7 @@ export function createGameStore({
             break
           }
           case 'prestigeBonus': {
-            const gain = bonusDarkMatterGain(current)
-            const after = pickArtifact(applyPrestige(current, gain, at), random())
-            commit(after)
-            pushToast('info', 'Перелёт с бонусом', `+${gain} тёмной материи`)
-            if (after.artifact) {
-              const def = artifactDef(after.artifact)
-              pushToast('event', `Артефакт: ${def.name}`, def.description)
-            }
+            doPrestige(current, bonusDarkMatterGain(current))
             break
           }
         }
@@ -448,6 +513,57 @@ export function createGameStore({
       setTheme: (theme) => set({ game: { ...get().game, theme } }),
 
       setAsteroidSkin: (skin) => set({ game: { ...get().game, asteroidSkin: skin } }),
+
+      galaxyReset: () => {
+        const { game } = get()
+        if (!canGalaxyReset(game)) return
+        const gain = shardsGain(game)
+        commit(applyGalaxyReset(game, clock()))
+        pushToast('info', 'Межгалактический прыжок', `+${gain} осколков звёзд`)
+      },
+
+      buyTalent: (id) => {
+        const next = buyTalent(get().game, id)
+        if (next) commit(next)
+      },
+
+      startChallenge: (id) => {
+        const { game } = get()
+        if (game.challenge) return
+        commit(startChallenge(game, id, clock()))
+        pushToast('info', `Испытание: ${challengeDef(id).name}`, challengeDef(id).description)
+      },
+
+      exitChallenge: () => {
+        const { game } = get()
+        if (!game.challenge) return
+        commit(exitChallenge(game, clock()))
+        pushToast('info', 'Испытание прервано')
+      },
+
+      setAutoPrestigeAt: (value) => set({ game: { ...get().game, autoPrestigeAt: Math.max(0, value) } }),
+
+      setAutoBuyer: (on) => set({ autoBuyerOn: on }),
+
+      startExpedition: (kind, drones) => {
+        const next = startExpedition(get().game, kind, drones, clock())
+        if (!next) return
+        commit(next)
+        pushToast('info', 'Экспедиция отправлена', `${drones} дронов в пути`)
+      },
+
+      collectExpedition: (index) => {
+        const result = collectExpedition(get().game, index, clock(), [random(), random()])
+        if (!result) return
+        commit(result.state)
+        if (result.outcome === 'fail') {
+          pushToast('error', 'Экспедиция провалилась', result.lostDrones > 0 ? `Потеряно дронов: ${result.lostDrones}` : 'Дроны спасены страховкой')
+        } else if (result.outcome === 'rare') {
+          pushToast('event', 'Редкая находка!', result.darkMatter > 0 ? `+${result.darkMatter} тёмной материи и ресурсы` : 'Ценные ресурсы на борту')
+        } else {
+          pushToast('info', 'Экспедиция вернулась', 'Трюмы полны руды')
+        }
+      },
 
       start: () => set({ started: true }),
 

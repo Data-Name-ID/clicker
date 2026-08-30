@@ -1,4 +1,5 @@
 import { artifactDef } from '../game/content/artifacts'
+import { challengeDef } from '../game/content/challenges'
 import { eventDef } from '../game/content/events'
 import { comboActive, comboMultiplier } from '../game/economy'
 import { formatDuration } from '../game/format'
@@ -31,6 +32,11 @@ export function BuffBar() {
   }
   if (game.artifact) {
     chips.push({ key: 'artifact', className: 'buff--artifact', text: artifactDef(game.artifact).name })
+  }
+  if (game.challenge) {
+    const def = challengeDef(game.challenge.id)
+    const left = def.timeLimitMs !== undefined ? ` ${formatDuration(Math.max(0, def.timeLimitMs - (now - game.challenge.startedAt)))}` : ''
+    chips.push({ key: 'challenge', className: 'buff--challenge', text: `Испытание: ${def.name}${left}` })
   }
   if (chips.length === 0) return null
 

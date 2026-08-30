@@ -1595,18 +1595,22 @@ b {
 body::before {
   content: '';
   position: fixed;
-  inset: 0;
+  top: -1024px;
+  left: -512px;
+  width: calc(100vw + 1024px);
+  height: calc(100vh + 2048px);
   background-image: var(--stars);
   background-size: 512px 512px;
   opacity: 0.4;
   pointer-events: none;
   z-index: -1;
+  will-change: transform;
   animation: star-drift 240s linear infinite;
 }
 
 @keyframes star-drift {
-  from { background-position: 0 0; }
-  to { background-position: 512px 1024px; }
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(512px, 1024px, 0); }
 }
 
 .btn--ready:not(:disabled) {
@@ -1741,4 +1745,118 @@ body::before {
 .info-tip__btn--on {
   color: #fff;
   border-color: #fff;
+}
+
+.buff--challenge { border-color: var(--danger); color: #ff9a9a; }
+
+.shards {
+  color: #ffd94a;
+}
+
+.galaxy {
+  border-top: 3px solid var(--border);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auto-prestige {
+  font-size: 9px;
+  color: var(--muted);
+}
+
+.auto-prestige input {
+  width: 80px;
+  font: inherit;
+  background: var(--bg);
+  color: var(--text);
+  border: 2px solid var(--border-light);
+  padding: 4px 6px;
+}
+
+.talents,
+.challenges {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.talent,
+.challenge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--panel-2);
+  border: 3px solid var(--border);
+  padding: 8px 10px;
+}
+
+.talent__body,
+.challenge__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.talent__name {
+  font-size: 9px;
+}
+
+.talent__desc,
+.challenge__desc {
+  font-size: 8px;
+  color: var(--muted);
+}
+
+.talent__maxed {
+  font-size: 8px;
+  color: var(--chip);
+}
+
+.challenge--done {
+  border-color: #ffd94a;
+}
+
+.expeditions {
+  background: var(--panel-2);
+  border: 3px solid var(--border);
+  padding: 8px 10px;
+  font-size: 9px;
+}
+
+.expeditions summary {
+  cursor: pointer;
+  font-size: 10px;
+}
+
+.expeditions__ready {
+  color: var(--chip);
+}
+
+.expedition {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 2px solid var(--border);
+}
+
+.expedition__timer {
+  color: var(--ore);
+}
+
+.expedition-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.expedition-form__hint {
+  font-size: 8px;
+  margin: 0;
 }

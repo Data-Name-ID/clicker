@@ -1,4 +1,5 @@
 import { hasShip } from './content/ship'
+import { talentLevel } from './content/talents'
 import { activateQuest } from './quests'
 import { hasUpgrade } from './economy'
 import { createInitialState, type GameState } from './types'
@@ -20,7 +21,7 @@ export const coreMultiplier = (state: GameState): number =>
   1 + Math.sqrt(Math.max(0, state.stats.runCores) / coreDivisor(state))
 
 export const darkMatterGain = (state: GameState): number =>
-  Math.floor(Math.sqrt(state.stats.runChips / 1000) * coreMultiplier(state))
+  Math.floor(Math.sqrt(state.stats.runChips / 1000) * coreMultiplier(state)) + talentLevel(state, 'darkVein')
 
 export const bonusDarkMatterGain = (state: GameState): number =>
   Math.floor(darkMatterGain(state) * PRESTIGE_BONUS_MULTIPLIER)
@@ -38,7 +39,9 @@ export function applyPrestige(state: GameState, gain: number, now = 0): GameStat
     },
     buildings: {
       ...fresh.buildings,
-      drone: hasShip(state, 'crewMemory') ? Math.min(state.buildings.drone, 10) : 0,
+      drone:
+        (hasShip(state, 'crewMemory') ? Math.min(state.buildings.drone, 10) : 0) +
+        5 * talentLevel(state, 'startBoost'),
       smelter: hasShip(state, 'autoSmelter') ? 1 : 0,
       excavator: hasShip(state, 'autoSmelter') ? 1 : 0,
     },
@@ -67,10 +70,20 @@ export function applyPrestige(state: GameState, gain: number, now = 0): GameStat
       caughtCat: state.stats.caughtCat,
       discoUsed: state.stats.discoUsed,
       runStartedAt: now,
+      totalPrestiges: state.stats.totalPrestiges + 1,
+      expeditionsDone: state.stats.expeditionsDone,
+      expeditionsFailed: state.stats.expeditionsFailed,
       prestigedWithoutExcavators: state.stats.prestigedWithoutExcavators || state.buildings.excavator === 0,
       prestigedUnder30Min: state.stats.prestigedUnder30Min || under30,
     },
     cooldowns: { ...state.cooldowns },
+    shards: state.shards,
+    galaxyCount: state.galaxyCount,
+    talents: state.talents,
+    challenge: state.challenge,
+    challengesDone: state.challengesDone,
+    expeditions: state.expeditions,
+    autoPrestigeAt: state.autoPrestigeAt,
     theme: state.theme,
     asteroidSkin: state.asteroidSkin,
     tutorialDismissed: state.tutorialDismissed,

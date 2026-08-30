@@ -1,4 +1,8 @@
+import { useState } from 'react'
 import { artifactDef } from '../game/content/artifacts'
+import { CHALLENGES } from '../game/content/challenges'
+import { TALENTS, talentLevel } from '../game/content/talents'
+import { GALAXY_MIN_DARK_MATTER, GALAXY_MIN_PRESTIGES, canGalaxyReset, shardsGain } from '../game/galaxy'
 import { SHIP_UPGRADES } from '../game/content/ship'
 import { formatNumber } from '../game/format'
 import {
@@ -10,6 +14,127 @@ import {
 } from '../game/prestige'
 import { useGame } from '../store/context'
 import { AdButton } from './AdButton'
+
+function GalaxySection() {
+  const game = useGame((s) => s.game)
+  const galaxyReset = useGame((s) => s.galaxyReset)
+  const buyTalent = useGame((s) => s.buyTalent)
+  const startChallenge = useGame((s) => s.startChallenge)
+  const exitChallenge = useGame((s) => s.exitChallenge)
+  const setAutoPrestigeAt = useGame((s) => s.setAutoPrestigeAt)
+  const [confirmJump, setConfirmJump] = useState(false)
+  const ready = canGalaxyReset(game)
+  const gain = shardsGain(game)
+  const visible = game.galaxyCount > 0 || game.shards > 0 || game.prestigeCount >= 3
+  if (!visible) return null
+
+  return (
+    <section className="galaxy">
+      <h3>Галактика</h3>
+      <p className="muted">
+        Осколков звёзд: <b className="shards">{game.shards}</b> · галактик: {game.galaxyCount}
+      </p>
+      <p className="muted">
+        Прыжок сжигает тёмную материю, здания, улучшения и артефакты. Корабль, достижения и таланты остаются. Нужно{' '}
+        {GALAXY_MIN_PRESTIGES} перелётов ({game.prestigeCount}/{GALAXY_MIN_PRESTIGES}) и {GALAXY_MIN_DARK_MATTER} ТМ (
+        {formatNumber(game.darkMatter)}/{GALAXY_MIN_DARK_MATTER}).
+      </p>
+      <div className="actions">
+        <button
+          type="button"
+          className={`btn ${confirmJump ? 'btn--danger' : 'btn--primary'}`}
+          disabled={!ready}
+          onClick={() => {
+            if (!confirmJump) {
+              setConfirmJump(true)
+              return
+            }
+            setConfirmJump(false)
+            galaxyReset()
+          }}
+        >
+          {confirmJump ? 'Точно прыгаем? Всё сгорит!' : `Межгалактический прыжок (+${gain})`}
+        </button>
+        {confirmJump && (
+          <button type="button" className="btn" onClick={() => setConfirmJump(false)}>
+            Отмена
+          </button>
+        )}
+      </div>
+      {talentLevel(game, 'autoPrestige') > 0 && (
+        <label className="auto-prestige">
+          Автоперелёт при награде ≥{' '}
+          <input
+            type="number"
+            min={0}
+            value={game.autoPrestigeAt}
+            onChange={(e) => setAutoPrestigeAt(Number(e.target.value) || 0)}
+            aria-label="Порог автоперелёта"
+          />{' '}
+          ТМ (0 — выключен)
+        </label>
+      )}
+      <h3>Таланты</h3>
+      <div className="talents">
+        {TALENTS.map((t) => {
+          const level = talentLevel(game, t.id)
+          const maxed = level >= t.maxLevel
+          const cost = t.cost(level)
+          return (
+            <article className="talent" key={t.id} data-testid={`talent-${t.id}`}>
+              <div className="talent__body">
+                <b className="talent__name">
+                  {t.name}
+                  {t.maxLevel > 1 && ` ${level}/${t.maxLevel}`}
+                </b>
+                <span className="talent__desc">{t.description}</span>
+              </div>
+              {maxed ? (
+                <span className="talent__maxed">Изучено</span>
+              ) : (
+                <button
+                  type="button"
+                  className={`btn ${game.shards >= cost ? 'btn--ready' : ''}`}
+                  disabled={game.shards < cost}
+                  onClick={() => buyTalent(t.id)}
+                >
+                  {cost} оск.
+                </button>
+              )}
+            </article>
+          )
+        })}
+      </div>
+      <h3>Испытания</h3>
+      <p className="muted">Спец-забег с ограничением: доберись до перелёта — получишь осколки (один раз за испытание).</p>
+      <div className="challenges">
+        {CHALLENGES.map((c) => {
+          const done = game.challengesDone.includes(c.id)
+          const active = game.challenge?.id === c.id
+          return (
+            <article className={`challenge ${done ? 'challenge--done' : ''}`} key={c.id}>
+              <div className="challenge__body">
+                <b>
+                  {c.name} {done && '✓'}
+                </b>
+                <span className="challenge__desc">{c.description}</span>
+              </div>
+              {active ? (
+                <button type="button" className="btn btn--danger" onClick={exitChallenge}>
+                  Выйти
+                </button>
+              ) : (
+                <button type="button" className="btn" disabled={game.challenge !== null} onClick={() => startChallenge(c.id)}>
+                  {done ? 'Ещё раз' : `Начать (+${c.reward})`}
+                </button>
+              )}
+            </article>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
 
 export function PrestigePanel() {
   const runChips = useGame((s) => s.game.stats.runChips)
@@ -29,8 +154,8 @@ export function PrestigePanel() {
   return (
     <div className="panel-body">
       <p>
-        Перелёт сбрасывает ресурсы, здания и улучшения, но даёт <b>тёмную материю</b>: +10 % к добыче, переработке и
-        клику за каждую единицу.
+        Перелёт сбрасывает ресурсы, здания и улучшения, но даёт <b>тёмную материю</b>: +10 % ко всему за единицу.
+        После 100 ТМ отдача растёт медленнее — излишки выгоднее сжигать в Галактике.
       </p>
       <p className="muted">
         Перелётов: {prestigeCount} · Тёмной материи: {formatNumber(darkMatter)}
@@ -85,9 +210,7 @@ export function PrestigePanel() {
                 <button type="button" className="btn btn--buy" disabled={!affordable} onClick={() => buyShip(u.id)}>
                   <span className="btn__label">Купить</span>
                   <span className="btn__cost">
-                    <span className="cost cost--dm">
-                      {u.cost} ТМ (−{u.cost * 10} %)
-                    </span>
+                    <span className="cost cost--dm">{u.cost} ТМ</span>
                   </span>
                 </button>
               )}
@@ -95,6 +218,7 @@ export function PrestigePanel() {
           )
         })}
       </section>
+      <GalaxySection />
     </div>
   )
 }

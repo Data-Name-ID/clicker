@@ -9,19 +9,19 @@ export interface ShipUpgradeDef {
 }
 
 export const SHIP_UPGRADES: ShipUpgradeDef[] = [
-  { id: 'startCargo', name: 'Стартовый капитал', description: 'Каждый забег начинается с 1 000 руды', cost: 2 },
-  { id: 'autoDrill', name: 'Автобур', description: 'Автоклик 1 раз/с, пока игра открыта', cost: 4 },
-  { id: 'cargoBay', name: 'Грузовой отсек', description: 'Кап оффлайн-прогресса 8 ч → 24 ч', cost: 5 },
-  { id: 'stasisStore', name: 'Стазис-склад', description: 'Каждый забег начинается с 200 сплава', cost: 6 },
-  { id: 'wholesale', name: 'Оптовик', description: 'Кнопка ×100 в покупках зданий', cost: 7 },
-  { id: 'thrusters', name: 'Разгонные дюзы', description: '«Перегрузка» 15 мин, «Дождь» 45 с', cost: 8 },
-  { id: 'autoSmelter', name: 'Автоплавильня', description: 'Старт с 1 плавильней и 1 экскаватором', cost: 9 },
-  { id: 'crewMemory', name: 'Память экипажа', description: 'После перелёта сохраняются первые 10 дронов', cost: 10 },
-  { id: 'longRange', name: 'Дальняя связь', description: '«Экстренная поставка» даёт 60 минут вместо 30', cost: 12 },
-  { id: 'darkAntenna', name: 'Тёмная антенна', description: 'События происходят в 1,5 раза чаще', cost: 14 },
-  { id: 'darkCompiler', name: 'Тёмный компилятор', description: 'Нейролаборатории дают +50 % ядер без роста расхода чипов', cost: 15 },
-  { id: 'doubleHold', name: 'Двойной трюм', description: 'Оффлайн-прогресс приносит ×1,5 ресурсов', cost: 18 },
-  { id: 'autoDrill2', name: 'Автобур II', description: 'Автоклик 5 раз/с', cost: 20, requires: 'autoDrill' },
+  { id: 'startCargo', name: 'Стартовый капитал', description: 'Каждый забег начинается с 1 000 руды', cost: 5 },
+  { id: 'autoDrill', name: 'Автобур', description: 'Автоклик 1 раз/с, пока игра открыта', cost: 10 },
+  { id: 'cargoBay', name: 'Грузовой отсек', description: 'Кап оффлайн-прогресса 8 ч → 24 ч', cost: 12 },
+  { id: 'stasisStore', name: 'Стазис-склад', description: 'Каждый забег начинается с 200 сплава', cost: 15 },
+  { id: 'wholesale', name: 'Оптовик', description: 'Кнопка ×100 в покупках зданий', cost: 18 },
+  { id: 'thrusters', name: 'Разгонные дюзы', description: '«Перегрузка» 15 мин, «Дождь» 45 с', cost: 20 },
+  { id: 'autoSmelter', name: 'Автоплавильня', description: 'Старт с 1 плавильней и 1 экскаватором', cost: 22 },
+  { id: 'crewMemory', name: 'Память экипажа', description: 'После перелёта сохраняются первые 10 дронов', cost: 25 },
+  { id: 'longRange', name: 'Дальняя связь', description: '«Экстренная поставка» даёт 60 минут вместо 30', cost: 30 },
+  { id: 'darkAntenna', name: 'Тёмная антенна', description: 'События происходят в 1,5 раза чаще', cost: 35 },
+  { id: 'darkCompiler', name: 'Тёмный компилятор', description: 'Нейролаборатории дают +50 % ядер без роста расхода чипов', cost: 38 },
+  { id: 'doubleHold', name: 'Двойной трюм', description: 'Оффлайн-прогресс приносит ×1,5 ресурсов', cost: 45 },
+  { id: 'autoDrill2', name: 'Автобур II', description: 'Автоклик 5 раз/с', cost: 50, requires: 'autoDrill' },
 ]
 
 export const shipUpgradeDef = (id: ShipUpgradeId): ShipUpgradeDef => SHIP_UPGRADES.find((u) => u.id === id)!

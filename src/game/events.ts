@@ -50,6 +50,9 @@ export interface EventTickResult {
 
 export function tickEvents(state: GameState, dt: number, rolls: [number, number]): EventTickResult {
   if (state.effects.event) return { state, started: null }
+  if (state.challenge?.id === 'blind') {
+    return { state: { ...state, eventCountdown: Math.max(0, state.eventCountdown - dt) }, started: null }
+  }
   const countdown = state.eventCountdown - dt
   if (countdown > 0) return { state: { ...state, eventCountdown: countdown }, started: null }
   const pool = eligibleEvents(state)

@@ -1,6 +1,7 @@
 import { BUILDINGS, COST_GROWTH, buildingDef } from './content/buildings'
 import { upgradeDef } from './content/upgrades'
 import { hasShip } from './content/ship'
+import { talentLevel } from './content/talents'
 import { tutorialStep } from './tutorial'
 import type {
   BuildingId,
@@ -33,6 +34,8 @@ export const hasUpgrade = (state: GameState, id: UpgradeId): boolean => state.up
 
 export const costDiscount = (state: GameState): number => (state.artifact === 'oldBlueprint' ? 0.8 : 1)
 
+export const costGrowth = (state: GameState): number => (state.challenge?.id === 'inflation' ? 1.3 : COST_GROWTH)
+
 export const milestoneLevel = (owned: number): number =>
   MILESTONE_THRESHOLDS.filter((t) => owned >= t).length
 
@@ -45,8 +48,9 @@ export const totalBuildings = (state: GameState): number =>
   Object.values(state.buildings).reduce((sum, n) => sum + n, 0)
 
 export function costOf(state: GameState, id: BuildingId, owned: number, count: number): Cost {
+  const growth = costGrowth(state)
   const factor =
-    (COST_GROWTH ** owned * (COST_GROWTH ** count - 1)) / (COST_GROWTH - 1) * costDiscount(state)
+    (growth ** owned * (growth ** count - 1)) / (growth - 1) * costDiscount(state)
   const result: Cost = {}
   for (const [res, base] of costEntries(buildingDef(id).baseCost)) {
     result[res] = base * factor
@@ -59,10 +63,11 @@ export const canAfford = (resources: Resources, cost: Cost): boolean =>
 
 export function maxAffordable(state: GameState, id: BuildingId, owned: number, resources: Resources): number {
   const discount = costDiscount(state)
+  const growth = costGrowth(state)
   let best = Infinity
   for (const [res, base] of costEntries(buildingDef(id).baseCost)) {
-    const unit = base * COST_GROWTH ** owned * discount
-    const n = Math.floor(Math.log((resources[res] * (COST_GROWTH - 1)) / unit + 1) / Math.log(COST_GROWTH))
+    const unit = base * growth ** owned * discount
+    const n = Math.floor(Math.log((resources[res] * (growth - 1)) / unit + 1) / Math.log(growth))
     best = Math.min(best, Math.max(0, n))
   }
   while (best > 0 && !canAfford(resources, costOf(state, id, owned, best))) best -= 1
@@ -79,6 +84,7 @@ export const spend = (resources: Resources, cost: Cost): Resources => {
 const TUTORIAL_BUILDINGS: BuildingId[] = ['drone', 'smelter', 'factory']
 
 export function isBuildingVisible(state: GameState, id: BuildingId): boolean {
+  if (state.challenge?.id === 'soloDrones') return id === 'drone'
   if (state.buildings[id] > 0) return true
   if (TUTORIAL_BUILDINGS.includes(id) && tutorialStep(state) !== null) return true
   return costEntries(buildingDef(id).baseCost).every(([res, base]) => state.stats.peakResources[res] >= base / 2)
@@ -100,12 +106,21 @@ export interface Multipliers {
   clickProducerSeconds: number
 }
 
+export const DM_SOFT_CAP = 100
+
 export function darkMatterMultiplier(state: GameState): number {
   const sealBonus = state.artifact === 'voidSeal' ? 1.5 : 1
-  return 1 + DARK_MATTER_BONUS * state.darkMatter * sealBonus
+  const dm = state.darkMatter * sealBonus
+  if (dm <= DM_SOFT_CAP) return 1 + DARK_MATTER_BONUS * dm
+  const capped = 1 + DARK_MATTER_BONUS * DM_SOFT_CAP
+  return capped * Math.sqrt(1 + (dm - DM_SOFT_CAP) / DM_SOFT_CAP)
 }
 
+const multipliersCache = new WeakMap<GameState, Multipliers>()
+
 export function multipliers(state: GameState): Multipliers {
+  const cached = multipliersCache.get(state)
+  if (cached) return cached
   const m: Multipliers = {
     click: 1,
     producer: { drone: 1, excavator: 1, laser: 1 },
@@ -228,16 +243,20 @@ export function multipliers(state: GameState): Multipliers {
       break
   }
 
+  m.producerAll *= 1 + 0.25 * talentLevel(state, 'oreMemory')
   m.global *= darkMatterMultiplier(state)
   if (state.effects.boostRemaining > 0) m.global *= BOOST_MULTIPLIER
+  multipliersCache.set(state, m)
   return m
 }
 
 export function productionPerSecond(state: GameState, m: Multipliers = multipliers(state)): number {
+  const busy = state.expeditions.reduce((sum, e) => sum + e.drones, 0)
   let total = 0
   for (const def of BUILDINGS) {
     if (def.kind !== 'producer') continue
-    total += state.buildings[def.id] * def.rate * m.producer[def.id]
+    const owned = def.id === 'drone' ? Math.max(0, state.buildings.drone - busy) : state.buildings[def.id]
+    total += owned * def.rate * m.producer[def.id]
   }
   return total * m.producerAll * m.global
 }
@@ -266,13 +285,18 @@ export function processorRates(
 }
 
 export function clickValue(state: GameState, m: Multipliers = multipliers(state)): number {
+  if (state.challenge?.id === 'silence') return 0
   const meteor = state.effects.meteorRemaining > 0 || state.effects.event?.id === 'meteorHail' ? METEOR_CLICK_MULTIPLIER : 1
   const crowd = hasUpgrade(state, 'crowd') && (state.stats.clicks + 1) % 10 === 0 ? 10 : 1
   const hammer = state.artifact === 'minerHammer' && state.stats.runClicks < 100 ? 10 : 1
   return m.click * darkMatterMultiplier(state) * meteor * crowd * hammer
 }
 
+const netRatesCache = new WeakMap<GameState, Resources>()
+
 export function netRates(state: GameState): Resources {
+  const cached = netRatesCache.get(state)
+  if (cached) return cached
   const m = multipliers(state)
   const smelter = processorRates(state, 'smelter', m)
   const factory = processorRates(state, 'factory', m)
@@ -280,12 +304,14 @@ export function netRates(state: GameState): Resources {
   const oreEaten = smelter.input * state.efficiency.smelter
   const alloyEaten = factory.input * state.efficiency.factory
   const chipEaten = neurolab.input * state.efficiency.neurolab
-  return {
+  const rates: Resources = {
     ore: productionPerSecond(state, m) - oreEaten,
     alloy: oreEaten * smelter.yieldRatio - alloyEaten,
     chip: alloyEaten * factory.yieldRatio - chipEaten,
     core: chipEaten * neurolab.yieldRatio,
   }
+  netRatesCache.set(state, rates)
+  return rates
 }
 
 export const critChance = (state: GameState): number =>
@@ -356,6 +382,7 @@ export function applyDischarge(state: GameState): GameState {
 }
 
 export function buyBuilding(state: GameState, id: BuildingId, count: number | 'max'): GameState | null {
+  if (state.challenge?.id === 'soloDrones' && id !== 'drone') return null
   const owned = state.buildings[id]
   const n = count === 'max' ? maxAffordable(state, id, owned, state.resources) : count
   if (n <= 0) return null
@@ -416,8 +443,11 @@ export function secondsUntilAffordable(state: GameState, cost: Cost): number | n
   return worst > 0 ? worst : 0
 }
 
+export const protocolsUnlocked = (state: GameState): boolean =>
+  hasUpgrade(state, 'protocols') || talentLevel(state, 'eternalProtocol') > 0
+
 export function setProtocol(state: GameState, protocol: GameState['protocol']): GameState {
-  if (state.protocol === protocol || !hasUpgrade(state, 'protocols')) return state
+  if (state.protocol === protocol || !protocolsUnlocked(state)) return state
   return {
     ...state,
     protocol,

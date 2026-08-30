@@ -122,11 +122,11 @@ describe('gameStore.importSave', () => {
 
 describe('gameStore ship shop', () => {
   it('buys a ship upgrade and spends dark matter', () => {
-    const store = makeStore({ darkMatter: 5 })
+    const store = makeStore({ darkMatter: 12 })
 
     store.getState().buyShip('startCargo')
 
-    expect(store.getState().game.darkMatter).toBe(3)
+    expect(store.getState().game.darkMatter).toBe(7)
     expect(store.getState().game.shipUpgrades).toEqual(['startCargo'])
     expect(store.getState().toasts.map((t) => t.title)).toContain('Корабль улучшен')
   })
@@ -257,5 +257,76 @@ describe('gameStore discharge', () => {
     expect(store.getState().game.resources.ore).toBe(300)
     expect(store.getState().shakeSeq).toBe(1)
     expect(store.getState().toasts.map((t) => t.title)).toContain('РАЗРЯД!')
+  })
+})
+
+describe('gameStore galaxy', () => {
+  it('jumps and grants shards', () => {
+    const store = makeStore({ prestigeCount: 5, darkMatter: 100, buildings: { drone: 40 } })
+
+    store.getState().galaxyReset()
+
+    expect(store.getState().game.shards).toBe(3)
+    expect(store.getState().game.galaxyCount).toBe(1)
+    expect(store.getState().game.darkMatter).toBe(0)
+    expect(store.getState().toasts.map((t) => t.title)).toContain('Межгалактический прыжок')
+  })
+
+  it('settles a challenge on prestige', () => {
+    const store = makeStore({ stats: { runChips: 10_000 }, challenge: { id: 'silence', startedAt: NOW - 1000 } })
+
+    store.getState().prestige()
+
+    expect(store.getState().game.challenge).toBeNull()
+    expect(store.getState().game.shards).toBe(2)
+    expect(store.getState().game.challengesDone).toEqual(['silence'])
+  })
+
+  it('blocks ads inside the ascetic challenge', async () => {
+    const store = makeStore({ challenge: { id: 'ascetic', startedAt: NOW } }, { ads: stubAds('rewarded') })
+
+    await store.getState().watchAd('boost')
+
+    expect(store.getState().game.stats.adsWatched).toBe(0)
+  })
+})
+
+describe('gameStore automation talents', () => {
+  it('auto buyer purchases the cheapest building', () => {
+    const store = makeStore({ resources: { ore: 20 }, talents: { autoBuyer: 1 }, eventCountdown: 100 })
+
+    store.getState().tick(NOW + 1000)
+
+    expect(store.getState().game.buildings.drone).toBe(1)
+  })
+
+  it('auto prestige fires at the configured reward', () => {
+    const store = makeStore({
+      stats: { runChips: 10_000 },
+      talents: { autoPrestige: 1 },
+      autoPrestigeAt: 3,
+      eventCountdown: 100,
+    })
+
+    store.getState().tick(NOW + 1000)
+
+    expect(store.getState().game.prestigeCount).toBe(1)
+    expect(store.getState().game.darkMatter).toBe(3)
+  })
+})
+
+describe('gameStore expeditions', () => {
+  it('starts and collects an expedition', () => {
+    const store = makeStore({ buildings: { drone: 30 }, eventCountdown: 100 })
+
+    store.getState().startExpedition('short', 10)
+    expect(store.getState().game.expeditions).toHaveLength(1)
+
+    store.setState({ game: { ...store.getState().game, expeditions: [{ kind: 'short', drones: 10, endsAt: NOW - 1 }] } })
+    store.getState().collectExpedition(0)
+
+    expect(store.getState().game.expeditions).toHaveLength(0)
+    expect(store.getState().game.stats.expeditionsDone).toBe(1)
+    expect(store.getState().game.resources.ore).toBeGreaterThan(0)
   })
 })

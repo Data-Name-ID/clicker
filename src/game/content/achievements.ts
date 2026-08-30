@@ -1,5 +1,7 @@
 import type { AchievementId, GameState } from '../types'
 import { ARTIFACTS } from './artifacts'
+import { CHALLENGES } from './challenges'
+import { TALENTS } from './talents'
 import { BUILDING_IDS } from './buildings'
 import { SHIP_UPGRADES } from './ship'
 
@@ -62,6 +64,11 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'secretCatLover', name: 'Кошатник', description: 'Поймать кота 5 раз', secret: true, isEarned: (s) => s.stats.catsCaught >= 5 },
   { id: 'secretDj', name: 'Диджей', description: 'Диско 3 раза', secret: true, isEarned: (s) => s.stats.discoCount >= 3 },
   { id: 'secretCombo', name: 'Комбо-мастер', description: 'Комбо 100', secret: true, isEarned: (s) => s.stats.comboBest >= 100 },
+  { id: 'galaxy1', name: 'Новая галактика', description: 'Первый межгалактический прыжок', isEarned: (s) => s.galaxyCount >= 1 },
+  { id: 'talents5', name: 'Талантливый', description: '5 уровней талантов', isEarned: (s) => TALENTS.reduce((sum, t) => sum + (s.talents[t.id] ?? 0), 0) >= 5 },
+  { id: 'challenger', name: 'Испытатель', description: 'Пройти все испытания', isEarned: (s) => s.challengesDone.length >= CHALLENGES.length },
+  { id: 'deepSpace', name: 'Дальний космос', description: '10 экспедиций', isEarned: (s) => s.stats.expeditionsDone >= 10 },
+  { id: 'secretUnlucky', name: 'Так бывает', description: 'Провалить экспедицию', secret: true, isEarned: (s) => s.stats.expeditionsFailed >= 1 },
 ]
 
 export const achievementDef = (id: AchievementId): AchievementDef => ACHIEVEMENTS.find((a) => a.id === id)!

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { resourceSprite } from '../assets/sprites'
 import { RESOURCE_IDS, resourceName } from '../game/content/resources'
-import { netRates } from '../game/economy'
+import { darkMatterMultiplier, netRates } from '../game/economy'
 import { formatNumber, formatRate } from '../game/format'
 import { useGame } from '../store/context'
 
@@ -68,7 +68,7 @@ export function ResourceBar() {
           <span className="resource__amount" data-testid="amount-darkMatter">
             {formatNumber(darkMatter)}
           </span>
-          <span className="resource__rate">+{Math.round(darkMatter * 10)} % ко всему</span>
+          <span className="resource__rate">+{formatNumber(Math.round((darkMatterMultiplier(game) - 1) * 100))} % ко всему</span>
         </div>
       </div>
     </header>

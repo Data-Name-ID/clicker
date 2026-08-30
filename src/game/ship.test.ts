@@ -9,14 +9,14 @@ const NOW = 1_700_000_000_000
 
 describe('buyShipUpgrade', () => {
   it('spends dark matter', () => {
-    const next = buyShipUpgrade(buildState({ darkMatter: 5 }), 'cargoBay')
+    const next = buyShipUpgrade(buildState({ darkMatter: 12 }), 'cargoBay')
 
     expect(next?.darkMatter).toBe(0)
     expect(next?.shipUpgrades).toEqual(['cargoBay'])
   })
 
   it('rejects a purchase without enough dark matter', () => {
-    expect(buyShipUpgrade(buildState({ darkMatter: 4 }), 'cargoBay')).toBeNull()
+    expect(buyShipUpgrade(buildState({ darkMatter: 11 }), 'cargoBay')).toBeNull()
   })
 
   it('rejects a duplicate purchase', () => {
@@ -24,8 +24,8 @@ describe('buyShipUpgrade', () => {
   })
 
   it('requires the first auto drill for the second', () => {
-    expect(buyShipUpgrade(buildState({ darkMatter: 50 }), 'autoDrill2')).toBeNull()
-    expect(buyShipUpgrade(buildState({ darkMatter: 50, shipUpgrades: ['autoDrill'] }), 'autoDrill2')).not.toBeNull()
+    expect(buyShipUpgrade(buildState({ darkMatter: 100 }), 'autoDrill2')).toBeNull()
+    expect(buyShipUpgrade(buildState({ darkMatter: 100, shipUpgrades: ['autoDrill'] }), 'autoDrill2')).not.toBeNull()
   })
 })
 

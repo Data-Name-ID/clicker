@@ -21,6 +21,7 @@ interface AdButtonProps {
 
 export function AdButton({ placement, label, activeLabel, activeRemaining = 0, disabled, className }: AdButtonProps) {
   const cooldown = useGame((s) => cooldownRemaining(s.game, placement, s.now))
+  const ascetic = useGame((s) => s.game.challenge?.id === 'ascetic')
   const busy = useGame((s) => s.adBusy !== null)
   const watchAd = useGame((s) => s.watchAd)
   const [hover, setHover] = useState(false)
@@ -46,7 +47,7 @@ export function AdButton({ placement, label, activeLabel, activeRemaining = 0, d
     }
   }, [pinned])
 
-  if (!adProvider.isAvailable(placement)) return null
+  if (ascetic || !adProvider.isAvailable(placement)) return null
 
   const info = AD_INFO[placement]
   const active = activeRemaining > 0

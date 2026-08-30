@@ -88,6 +88,11 @@ export type AchievementId =
   | 'secretCombo'
   | 'quests10'
   | 'discharge5'
+  | 'galaxy1'
+  | 'talents5'
+  | 'challenger'
+  | 'deepSpace'
+  | 'secretUnlucky'
 
 export type EventId =
   | 'goldVein'
@@ -134,6 +139,35 @@ export type ProtocolId = 'balance' | 'mining' | 'factory'
 
 export type ThemeId = 'classic' | 'void' | 'nebula' | 'terminal'
 
+export type TalentId =
+  | 'autoBuyer'
+  | 'eternalProtocol'
+  | 'startBoost'
+  | 'oreMemory'
+  | 'fastBoost'
+  | 'expeditionCorps'
+  | 'autoEvents'
+  | 'insurance'
+  | 'autoUpgrades'
+  | 'darkVein'
+  | 'shardResonance'
+  | 'autoPrestige'
+
+export type ChallengeId = 'silence' | 'inflation' | 'blind' | 'ascetic' | 'soloDrones' | 'sprint'
+
+export type ExpeditionKind = 'short' | 'long' | 'deep'
+
+export interface Expedition {
+  kind: ExpeditionKind
+  drones: number
+  endsAt: number
+}
+
+export interface ActiveChallenge {
+  id: ChallengeId
+  startedAt: number
+}
+
 export type Cost = Partial<Record<ResourceId, number>>
 export type Resources = Record<ResourceId, number>
 
@@ -165,6 +199,9 @@ export interface GameStats {
   comboBest: number
   discharges: number
   questsCompleted: number
+  totalPrestiges: number
+  expeditionsDone: number
+  expeditionsFailed: number
 }
 
 export interface ActiveEvent {
@@ -199,7 +236,7 @@ export interface QuestState {
 }
 
 export interface GameState {
-  version: 3
+  version: 4
   resources: Resources
   darkMatter: number
   buildings: Record<BuildingId, number>
@@ -222,6 +259,13 @@ export interface GameState {
   quest: QuestState
   theme: ThemeId
   asteroidSkin: number | null
+  shards: number
+  galaxyCount: number
+  talents: Partial<Record<TalentId, number>>
+  challenge: ActiveChallenge | null
+  challengesDone: ChallengeId[]
+  expeditions: Expedition[]
+  autoPrestigeAt: number
   tutorialDismissed: boolean
   tutorialSeen: TutorialStepId[]
   savedAt: number
@@ -231,7 +275,7 @@ export const zeroResources = (): Resources => ({ ore: 0, alloy: 0, chip: 0, core
 
 export function createInitialState(): GameState {
   return {
-    version: 3,
+    version: 4,
     resources: zeroResources(),
     darkMatter: 0,
     buildings: { drone: 0, excavator: 0, smelter: 0, factory: 0, laser: 0, neurolab: 0 },
@@ -266,6 +310,9 @@ export function createInitialState(): GameState {
       comboBest: 0,
       discharges: 0,
       questsCompleted: 0,
+      totalPrestiges: 0,
+      expeditionsDone: 0,
+      expeditionsFailed: 0,
     },
     effects: { boostRemaining: 0, meteorRemaining: 0, event: null },
     cooldowns: { boostUntil: 0, supplyUntil: 0, meteorUntil: 0, rerollUntil: 0, eventRushUntil: 0 },
@@ -282,6 +329,13 @@ export function createInitialState(): GameState {
     quest: { index: 0, baseline: 0, goal: 0 },
     theme: 'classic',
     asteroidSkin: null,
+    shards: 0,
+    galaxyCount: 0,
+    talents: {},
+    challenge: null,
+    challengesDone: [],
+    expeditions: [],
+    autoPrestigeAt: 0,
     tutorialDismissed: false,
     tutorialSeen: [],
     savedAt: 0,

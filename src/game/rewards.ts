@@ -1,4 +1,5 @@
 import { hasShip, autoDrillRate } from './content/ship'
+import { talentLevel } from './content/talents'
 import { clickValue, multipliers } from './economy'
 import { addResources } from './events'
 import { simulateChunked } from './tick'
@@ -46,7 +47,10 @@ export const applyBoost = (state: GameState, now: number): GameState => ({
   effects: { ...state.effects, boostRemaining: boostDuration(state) },
   cooldowns: {
     ...state.cooldowns,
-    boostUntil: now + boostDuration(state) * 1000 + BOOST_COOLDOWN_MS * cooldownScale(state),
+    boostUntil:
+      now +
+      boostDuration(state) * 1000 +
+      BOOST_COOLDOWN_MS * cooldownScale(state) * (talentLevel(state, 'fastBoost') > 0 ? 0.75 : 1),
   },
 })
 

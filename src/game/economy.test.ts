@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildState } from '../../test/builders'
-import { applyClick, applyDischarge, buildingInfo, canAfford, clickValue, costOf, isBuildingVisible, maxAffordable, netRates, productionPerSecond, performClick, processorRates, secondsUntilAffordable, setProtocol } from './economy'
+import { applyClick, applyDischarge, buildingInfo, canAfford, darkMatterMultiplier, clickValue, costOf, isBuildingVisible, maxAffordable, netRates, productionPerSecond, performClick, processorRates, secondsUntilAffordable, setProtocol } from './economy'
 
 describe('costOf', () => {
   it('prices 10 drones with none owned', () => {
@@ -243,5 +243,16 @@ describe('secondsUntilAffordable', () => {
 
   it('returns 0 when already affordable', () => {
     expect(secondsUntilAffordable(buildState({ resources: { ore: 20 } }), { ore: 15 })).toBe(0)
+  })
+})
+
+describe('dark matter soft cap', () => {
+  it('is linear up to 100 dark matter', () => {
+    expect(darkMatterMultiplier(buildState({ darkMatter: 100 }))).toBe(11)
+  })
+
+  it('grows as a square root beyond the cap', () => {
+    expect(darkMatterMultiplier(buildState({ darkMatter: 400 }))).toBe(22)
+    expect(darkMatterMultiplier(buildState({ darkMatter: 50_000 }))).toBeCloseTo(245.97, 1)
   })
 })

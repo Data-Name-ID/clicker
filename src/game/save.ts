@@ -2,24 +2,36 @@ import { ACHIEVEMENTS } from './content/achievements'
 import { BUILDING_IDS } from './content/buildings'
 import { UPGRADES } from './content/upgrades'
 import { simulateChunked } from './tick'
+import { ARTIFACTS } from './content/artifacts'
+import { EVENTS } from './content/events'
+import { SHIP_UPGRADES } from './content/ship'
+import { hasShip } from './content/ship'
 import {
   createInitialState,
   type AchievementId,
+  type ArtifactId,
+  type EventId,
   type GameState,
+  type ProtocolId,
   type Resources,
+  type ShipUpgradeId,
   type TutorialStepId,
   type UpgradeId,
 } from './types'
 
 export const SAVE_KEY = 'asteroid7:save'
-export const SAVE_VERSION = 1
+export const SAVE_VERSION = 2
 export const OFFLINE_MIN_SECONDS = 60
 export const OFFLINE_CAP_SECONDS = 8 * 60 * 60
+export const OFFLINE_CAP_EXTENDED_SECONDS = 24 * 60 * 60
+export const DOUBLE_HOLD_MULTIPLIER = 1.5
 export const OFFLINE_CHUNK_SECONDS = 60
 
 type Raw = Record<string, unknown>
 
-const migrations: Record<number, (raw: Raw) => Raw> = {}
+const migrations: Record<number, (raw: Raw) => Raw> = {
+  1: (raw) => raw,
+}
 
 export class SaveError extends Error {}
 
@@ -32,8 +44,15 @@ const record = (v: unknown): Raw => (isRecord(v) ? v : {})
 
 function resources(v: unknown, fallback: Resources): Resources {
   const r = record(v)
-  return { ore: num(r.ore, fallback.ore), alloy: num(r.alloy, fallback.alloy), chip: num(r.chip, fallback.chip) }
+  return {
+    ore: num(r.ore, fallback.ore),
+    alloy: num(r.alloy, fallback.alloy),
+    chip: num(r.chip, fallback.chip),
+    core: num(r.core, fallback.core),
+  }
 }
+
+const bool = (v: unknown): boolean => v === true
 
 function ids<T extends string>(v: unknown, known: readonly T[]): T[] {
   if (!Array.isArray(v)) return []
@@ -43,7 +62,11 @@ function ids<T extends string>(v: unknown, known: readonly T[]): T[] {
 
 const UPGRADE_IDS: UpgradeId[] = UPGRADES.map((u) => u.id)
 const ACHIEVEMENT_IDS: AchievementId[] = ACHIEVEMENTS.map((a) => a.id)
-const TUTORIAL_STEP_IDS: TutorialStepId[] = ['click', 'drone', 'ads', 'smelter', 'ore', 'factory', 'prestige']
+const TUTORIAL_STEP_IDS: TutorialStepId[] = ['click', 'drone', 'ads', 'smelter', 'ore', 'factory', 'cores', 'prestige']
+const ARTIFACT_IDS: ArtifactId[] = ARTIFACTS.map((a) => a.id)
+const SHIP_IDS: ShipUpgradeId[] = SHIP_UPGRADES.map((u) => u.id)
+const EVENT_IDS: EventId[] = EVENTS.map((e) => e.id)
+const PROTOCOLS: ProtocolId[] = ['balance', 'mining', 'factory']
 
 function normalize(raw: Raw): GameState {
   const base = createInitialState()
@@ -64,15 +87,31 @@ function normalize(raw: Raw): GameState {
     prestigeCount: Math.max(0, Math.floor(num(raw.prestigeCount, 0))),
     stats: {
       clicks: num(stats.clicks, 0),
+      runClicks: num(stats.runClicks, 0),
       totalProduced: resources(stats.totalProduced, base.stats.totalProduced),
       runChips: num(stats.runChips, 0),
+      runCores: num(stats.runCores, 0),
       adsWatched: num(stats.adsWatched, 0),
       smelterIdleSeconds: num(stats.smelterIdleSeconds, 0),
       peakResources: resources(stats.peakResources, base.stats.peakResources),
+      eventsSeen: num(stats.eventsSeen, 0),
+      meteorsCaught: num(stats.meteorsCaught, 0),
+      protocolSwitches: num(stats.protocolSwitches, 0),
+      strayDrones: num(stats.strayDrones, 0),
+      noClickSeconds: num(stats.noClickSeconds, 0),
+      clickBurstStart: num(stats.clickBurstStart, 0),
+      clickBurstCount: num(stats.clickBurstCount, 0),
+      runStartedAt: num(stats.runStartedAt, 0),
+      prestigedWithoutExcavators: bool(stats.prestigedWithoutExcavators),
+      prestigedUnder30Min: bool(stats.prestigedUnder30Min),
+      nightOwl: bool(stats.nightOwl),
+      caughtCat: bool(stats.caughtCat),
+      discoUsed: bool(stats.discoUsed),
     },
     effects: {
       boostRemaining: Math.max(0, num(effects.boostRemaining, 0)),
       meteorRemaining: Math.max(0, num(effects.meteorRemaining, 0)),
+      event: normalizeEvent(effects.event),
     },
     cooldowns: {
       boostUntil: num(cooldowns.boostUntil, 0),
@@ -82,11 +121,25 @@ function normalize(raw: Raw): GameState {
     efficiency: {
       smelter: num(efficiency.smelter, 1),
       factory: num(efficiency.factory, 1),
+      neurolab: num(efficiency.neurolab, 1),
     },
+    protocol: PROTOCOLS.includes(raw.protocol as ProtocolId) ? (raw.protocol as ProtocolId) : 'balance',
+    artifact: ARTIFACT_IDS.includes(raw.artifact as ArtifactId) ? (raw.artifact as ArtifactId) : null,
+    artifactsSeen: ids(raw.artifactsSeen, ARTIFACT_IDS),
+    shipUpgrades: ids(raw.shipUpgrades, SHIP_IDS),
+    eventCountdown: Math.max(0, num(raw.eventCountdown, 0)),
+    catCountdown: Math.max(0, num(raw.catCountdown, 0)),
     tutorialDismissed: raw.tutorialDismissed === true,
     tutorialSeen: ids(raw.tutorialSeen, TUTORIAL_STEP_IDS),
     savedAt: num(raw.savedAt, 0),
   }
+}
+
+function normalizeEvent(v: unknown): GameState['effects']['event'] {
+  if (!isRecord(v)) return null
+  const remaining = num(v.remaining, 0)
+  if (remaining <= 0 || !EVENT_IDS.includes(v.id as EventId)) return null
+  return { id: v.id as EventId, remaining }
 }
 
 export function migrate(raw: unknown): GameState {
@@ -149,18 +202,35 @@ export interface OfflineResult {
 }
 
 export function applyOffline(state: GameState, now: number): OfflineResult {
-  const elapsed = Math.min(Math.max(0, (now - state.savedAt) / 1000), OFFLINE_CAP_SECONDS)
+  const cap = hasShip(state, 'cargoBay') ? OFFLINE_CAP_EXTENDED_SECONDS : OFFLINE_CAP_SECONDS
+  const elapsed = Math.min(Math.max(0, (now - state.savedAt) / 1000), cap)
   if (elapsed < OFFLINE_MIN_SECONDS) {
-    return { state, elapsed: 0, gains: { ore: 0, alloy: 0, chip: 0 } }
+    return { state, elapsed: 0, gains: { ore: 0, alloy: 0, chip: 0, core: 0 } }
   }
-  const next = simulateChunked(state, elapsed, OFFLINE_CHUNK_SECONDS)
-  return {
-    state: next,
-    elapsed,
-    gains: {
-      ore: Math.max(0, next.resources.ore - state.resources.ore),
-      alloy: Math.max(0, next.resources.alloy - state.resources.alloy),
-      chip: Math.max(0, next.resources.chip - state.resources.chip),
-    },
+  let next = simulateChunked(state, elapsed, OFFLINE_CHUNK_SECONDS)
+  let gains: Resources = {
+    ore: Math.max(0, next.resources.ore - state.resources.ore),
+    alloy: Math.max(0, next.resources.alloy - state.resources.alloy),
+    chip: Math.max(0, next.resources.chip - state.resources.chip),
+    core: Math.max(0, next.resources.core - state.resources.core),
   }
+  if (hasShip(state, 'doubleHold')) {
+    const extra = DOUBLE_HOLD_MULTIPLIER - 1
+    next = {
+      ...next,
+      resources: {
+        ore: next.resources.ore + gains.ore * extra,
+        alloy: next.resources.alloy + gains.alloy * extra,
+        chip: next.resources.chip + gains.chip * extra,
+        core: next.resources.core + gains.core * extra,
+      },
+    }
+    gains = {
+      ore: gains.ore * DOUBLE_HOLD_MULTIPLIER,
+      alloy: gains.alloy * DOUBLE_HOLD_MULTIPLIER,
+      chip: gains.chip * DOUBLE_HOLD_MULTIPLIER,
+      core: gains.core * DOUBLE_HOLD_MULTIPLIER,
+    }
+  }
+  return { state: next, elapsed, gains }
 }

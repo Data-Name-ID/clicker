@@ -391,6 +391,72 @@ const AD_MARK = [
 
 bitmap('ad-mark', AD_MARK, [217, 199, 255], { o: DARK })
 
+const CORE = [240, 90, 140]
+
+const CAT = [
+  '................',
+  '...#......#.....',
+  '...##....##.....',
+  '...#o####o#.....',
+  '...#oooooo#.....',
+  '...#o#oo#o#.....',
+  '...#oooooo#.....',
+  '....#o##o#......',
+  '.....####.......',
+  '...##oooo##..#..',
+  '...#oooooo#..#..',
+  '...#oooooo#.#...',
+  '...#oo##oo###...',
+  '....##..##......',
+  '....#....#......',
+  '................',
+]
+
+const COMET = [
+  '..........##....',
+  '.........####...',
+  '.......#######..',
+  '......########..',
+  '....##########..',
+  '...####oooo###..',
+  '..####oooooo##..',
+  '..###oooooooo#..',
+  '..###oooooooo#..',
+  '..####oooooo##..',
+  '...####oooo###..',
+  '....##########..',
+  '......########..',
+  '.......#######..',
+  '.........####...',
+  '..........##....',
+]
+
+bitmap('cat', CAT, [40, 44, 66], { o: [210, 214, 235] })
+bitmap('comet', COMET, [140, 220, 255], { o: [235, 250, 255] })
+
+function resCore() {
+  const c = new Canvas(16, 16)
+  c.circle(8, 8, 6.5, shade(CORE, 1))
+  c.circle(8, 8, 4, shade(CORE, 1.25))
+  c.rect(7, 3, 2, 10, shade(CORE, 0.7))
+  c.rect(3, 7, 10, 2, shade(CORE, 0.7))
+  c.rect(7, 7, 2, 2, [255, 255, 255, 255])
+  c.outline([20, 24, 40, 255])
+  c.save('res-core')
+}
+
+resCore()
+
+building('neurolab', (c) => {
+  c.rect(5, 18, 22, 10, shade(STEEL, 0.8))
+  c.circle(16, 14, 9, shade([90, 70, 120], 1))
+  c.circle(16, 14, 6, shade(CORE, 0.9))
+  c.rect(12, 12, 3, 3, shade(CORE, 1.3))
+  c.rect(17, 14, 3, 3, shade(CORE, 1.3))
+  c.rect(8, 22, 4, 3, shade(CORE, 1.1))
+  c.rect(20, 22, 4, 3, shade(CORE, 1.1))
+})
+
 for (const [id, rows] of Object.entries(TAB_ICONS)) {
   bitmap(`tab-${id}`, rows, MUTED)
   bitmap(`tab-${id}-on`, rows, ORE)
@@ -399,6 +465,9 @@ for (const [id, rows] of Object.entries(TAB_ICONS)) {
 asteroid(0, [130, 120, 110])
 asteroid(1, [150, 95, 80])
 asteroid(2, [95, 110, 140])
+asteroid(3, [110, 140, 105])
+asteroid(4, [140, 120, 150])
+asteroid(5, [160, 140, 90])
 shard()
 meteor()
 console.log(`sprites written to ${OUT}`)

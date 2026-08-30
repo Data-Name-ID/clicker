@@ -1,3 +1,6 @@
+import { hasShip, autoDrillRate } from './content/ship'
+import { clickValue, multipliers } from './economy'
+import { addResources } from './events'
 import { simulateChunked } from './tick'
 import type { GameState, Resources } from './types'
 
@@ -9,6 +12,19 @@ export const SUPPLY_SECONDS = 30 * 60
 export const SUPPLY_COOLDOWN_MS = 60 * 60 * 1000
 export const METEOR_DURATION = 30
 export const METEOR_COOLDOWN_MS = 15 * 60 * 1000
+export const THRUSTERS_MULTIPLIER = 1.5
+
+export const boostDuration = (state: GameState): number =>
+  hasShip(state, 'thrusters') ? BOOST_DURATION * THRUSTERS_MULTIPLIER : BOOST_DURATION
+
+export const meteorDuration = (state: GameState): number =>
+  hasShip(state, 'thrusters') ? METEOR_DURATION * THRUSTERS_MULTIPLIER : METEOR_DURATION
+
+export const supplySeconds = (state: GameState): number =>
+  hasShip(state, 'longRange') ? SUPPLY_SECONDS * 2 : SUPPLY_SECONDS
+
+export const cooldownScale = (state: GameState): number =>
+  state.artifact === 'smuggledBooster' ? 0.5 : 1
 
 export const recordAdWatched = (state: GameState): GameState => ({
   ...state,
@@ -17,42 +33,41 @@ export const recordAdWatched = (state: GameState): GameState => ({
 
 export const applyBoost = (state: GameState, now: number): GameState => ({
   ...state,
-  effects: { ...state.effects, boostRemaining: BOOST_DURATION },
-  cooldowns: { ...state.cooldowns, boostUntil: now + BOOST_DURATION * 1000 + BOOST_COOLDOWN_MS },
+  effects: { ...state.effects, boostRemaining: boostDuration(state) },
+  cooldowns: {
+    ...state.cooldowns,
+    boostUntil: now + boostDuration(state) * 1000 + BOOST_COOLDOWN_MS * cooldownScale(state),
+  },
 })
 
 export const applySupply = (state: GameState, now: number): GameState => {
-  const simulated = simulateChunked(state, SUPPLY_SECONDS)
+  const simulated = simulateChunked(state, supplySeconds(state))
   return {
     ...simulated,
     effects: { ...state.effects },
-    cooldowns: { ...state.cooldowns, supplyUntil: now + SUPPLY_COOLDOWN_MS },
+    cooldowns: { ...state.cooldowns, supplyUntil: now + SUPPLY_COOLDOWN_MS * cooldownScale(state) },
   }
 }
 
 export const applyMeteorShower = (state: GameState, now: number): GameState => ({
   ...state,
-  effects: { ...state.effects, meteorRemaining: METEOR_DURATION },
-  cooldowns: { ...state.cooldowns, meteorUntil: now + METEOR_COOLDOWN_MS },
+  effects: { ...state.effects, meteorRemaining: meteorDuration(state) },
+  cooldowns: {
+    ...state.cooldowns,
+    meteorUntil: now + METEOR_COOLDOWN_MS * cooldownScale(state),
+  },
 })
 
-export const applyOfflineDouble = (state: GameState, gains: Resources): GameState => ({
-  ...state,
-  resources: {
-    ore: state.resources.ore + gains.ore,
-    alloy: state.resources.alloy + gains.alloy,
-    chip: state.resources.chip + gains.chip,
-  },
-  stats: {
-    ...state.stats,
-    totalProduced: {
-      ore: state.stats.totalProduced.ore + gains.ore,
-      alloy: state.stats.totalProduced.alloy + gains.alloy,
-      chip: state.stats.totalProduced.chip + gains.chip,
-    },
-    runChips: state.stats.runChips + gains.chip,
-  },
-})
+export const applyOfflineDouble = (state: GameState, gains: Resources): GameState =>
+  addResources(state, gains)
+
+export function applyAutoDrill(state: GameState, dt: number): GameState {
+  const rate = autoDrillRate(state)
+  if (rate === 0) return state
+  const m = multipliers(state)
+  const gain = clickValue(state, m) * rate * dt
+  return addResources(state, { ore: gain })
+}
 
 export function cooldownRemaining(state: GameState, placement: AdPlacement, now: number): number {
   switch (placement) {

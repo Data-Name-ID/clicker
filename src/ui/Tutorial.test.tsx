@@ -77,7 +77,7 @@ describe('Tutorial', () => {
     renderWithStore(<Tutorial />, {
       stats: { clicks: 10 },
       buildings: { drone: 1, smelter: 1, factory: 1 },
-      tutorialSeen: ['ads', 'ore'],
+      tutorialSeen: ['ads', 'ore', 'cores'],
     })
 
     fireEvent.click(screen.getByRole('button', { name: 'Понятно' }))

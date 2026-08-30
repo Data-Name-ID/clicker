@@ -8,9 +8,11 @@ export function ResourceBar() {
   const game = useGame((s) => s.game)
   const rates = netRates(game)
   const { resources, darkMatter } = game
+  const coreVisible = resources.core > 0 || game.buildings.neurolab > 0 || game.stats.peakResources.chip >= 1000
+  const visible = RESOURCE_IDS.filter((id) => id !== 'core' || coreVisible)
   return (
     <header className="resource-bar frame" aria-label="Ресурсы">
-      {RESOURCE_IDS.map((id) => (
+      {visible.map((id) => (
         <div className={`resource resource--${id}`} key={id} title={resourceName(id)} data-tour={`resource-${id}`}>
           <img className="pixel" src={resourceSprite(id)} alt="" width={16} height={16} />
           <div className="resource__body">
@@ -30,7 +32,7 @@ export function ResourceBar() {
           <span className="resource__amount" data-testid="amount-darkMatter">
             {formatNumber(darkMatter)}
           </span>
-          <span className="resource__rate">+{darkMatter * 10} % ко всему</span>
+          <span className="resource__rate">+{Math.round(darkMatter * 10)} % ко всему</span>
         </div>
       </div>
     </header>

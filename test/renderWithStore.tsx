@@ -13,7 +13,7 @@ export const stubAds = (result: AdResult = 'rewarded'): AdProvider => ({
 })
 
 export function makeStore(overrides: StateOverrides = {}, deps: GameStoreDeps = {}) {
-  const store = createGameStore({ ads: stubAds(), storage: memoryStorage(), clock: () => 1_700_000_000_000, ...deps })
+  const store = createGameStore({ ads: stubAds(), storage: memoryStorage(), clock: () => 1_700_000_000_000, random: () => 0.5, ...deps })
   const game: GameState = buildState(overrides)
   store.setState({ game, now: 1_700_000_000_000, lastTick: 1_700_000_000_000 })
   return store

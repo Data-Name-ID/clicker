@@ -40,7 +40,7 @@ describe('tutorialStep', () => {
   })
 
   it('ends after the first prestige', () => {
-    const state = buildState({ stats: { clicks: 10 }, buildings: { drone: 1, smelter: 1, factory: 1 }, prestigeCount: 1, tutorialSeen: ['ads', 'ore'] })
+    const state = buildState({ stats: { clicks: 10 }, buildings: { drone: 1, smelter: 1, factory: 1 }, prestigeCount: 1, tutorialSeen: ['ads', 'ore', 'cores'] })
 
     expect(tutorialStep(state)).toBeNull()
   })

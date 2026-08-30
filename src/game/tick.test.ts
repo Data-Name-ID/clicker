@@ -93,3 +93,50 @@ describe('simulateChunked', () => {
     expect(next.resources.ore).toBe(750)
   })
 })
+
+describe('neurolab chain', () => {
+  it('turns chips into cores', () => {
+    const state = buildState({ buildings: { neurolab: 2 }, resources: { chip: 100 } })
+
+    const next = simulate(state, 1)
+
+    expect(next.resources.chip).toBe(80)
+    expect(next.resources.core).toBe(1)
+    expect(next.stats.runCores).toBe(1)
+  })
+
+  it('dreams keep half output without chips', () => {
+    const state = buildState({ buildings: { neurolab: 1 }, upgrades: ['dream'] })
+
+    const next = simulate(state, 1)
+
+    expect(next.efficiency.neurolab).toBe(0)
+    expect(next.resources.core).toBe(0.25)
+  })
+})
+
+describe('events in simulate', () => {
+  it('gold vein multiplies ore production by 5', () => {
+    const state = buildState({ buildings: { drone: 10 }, effects: { event: { id: 'goldVein', remaining: 30 } } })
+
+    expect(simulate(state, 1).resources.ore).toBe(25)
+  })
+
+  it('splits the step when the event expires inside it', () => {
+    const state = buildState({ buildings: { drone: 10 }, effects: { event: { id: 'goldVein', remaining: 0.5 } } })
+
+    const next = simulate(state, 1)
+
+    expect(next.resources.ore).toBe(15)
+    expect(next.effects.event).toBeNull()
+  })
+
+  it('magnetic storm halts smelters', () => {
+    const state = buildState({ buildings: { smelter: 5 }, resources: { ore: 100 }, effects: { event: { id: 'magneticStorm', remaining: 45 } } })
+
+    const next = simulate(state, 1)
+
+    expect(next.resources.ore).toBe(100)
+    expect(next.efficiency.smelter).toBe(0)
+  })
+})

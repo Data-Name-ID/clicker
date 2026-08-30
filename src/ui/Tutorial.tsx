@@ -15,6 +15,7 @@ const TARGETS: Record<TutorialStepId, StepTarget> = {
   smelter: { tab: 'buildings', selectors: ['[data-tour="building-smelter"]', '[data-tour="resource-ore"]'] },
   ore: { tab: 'buildings', selectors: ['[data-tour="building-smelter"]'] },
   factory: { tab: 'buildings', selectors: ['[data-tour="building-factory"]', '[data-tour="resource-alloy"]'] },
+  cores: { tab: 'buildings', selectors: ['[data-tour="building-neurolab"]', '[data-tour="resource-chip"]'] },
   prestige: { tab: 'buildings', selectors: ['[data-tour="tab-prestige"]'] },
 }
 

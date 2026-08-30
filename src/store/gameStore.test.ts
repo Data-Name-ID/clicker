@@ -22,7 +22,7 @@ describe('gameStore.tick', () => {
     store.getState().tick(NOW + 400_000)
 
     expect(store.getState().game.resources.ore).toBe(2000)
-    expect(store.getState().offline).toEqual({ elapsed: 400, gains: { ore: 2000, alloy: 0, chip: 0 } })
+    expect(store.getState().offline).toEqual({ elapsed: 400, gains: { ore: 2000, alloy: 0, chip: 0, core: 0 } })
   })
 })
 
@@ -56,7 +56,7 @@ describe('gameStore.watchAd', () => {
 
   it('doubles offline gains once and closes the modal', async () => {
     const store = makeStore({ resources: { ore: 100 } }, { ads: stubAds('rewarded') })
-    store.setState({ offline: { elapsed: 600, gains: { ore: 100, alloy: 0, chip: 0 } } })
+    store.setState({ offline: { elapsed: 600, gains: { ore: 100, alloy: 0, chip: 0, core: 0 } } })
 
     await store.getState().watchAd('offlineDouble')
 
@@ -117,5 +117,83 @@ describe('gameStore.importSave', () => {
 
     expect(store.getState().game.darkMatter).toBe(7)
     expect(storage.value).not.toBeNull()
+  })
+})
+
+describe('gameStore ship shop', () => {
+  it('buys a ship upgrade and spends dark matter', () => {
+    const store = makeStore({ darkMatter: 5 })
+
+    store.getState().buyShip('startCargo')
+
+    expect(store.getState().game.darkMatter).toBe(3)
+    expect(store.getState().game.shipUpgrades).toEqual(['startCargo'])
+    expect(store.getState().toasts.map((t) => t.title)).toContain('Корабль улучшен')
+  })
+})
+
+describe('gameStore events', () => {
+  it('starts an event from the tick and announces it', () => {
+    const store = makeStore()
+
+    store.getState().tick(NOW + 1000)
+
+    expect(store.getState().game.effects.event?.id).toBe('comet')
+    expect(store.getState().toasts.map((t) => t.title)).toContain('Пролетающая комета')
+  })
+
+  it('rewards a caught comet', () => {
+    const store = makeStore({ buildings: { drone: 10 }, effects: { event: { id: 'comet', remaining: 5 } } })
+
+    store.getState().clickComet()
+
+    expect(store.getState().game.resources.ore).toBe(3000)
+    expect(store.getState().game.effects.event).toBeNull()
+  })
+})
+
+describe('gameStore cat', () => {
+  it('catches the cat and opens the box choice', () => {
+    const store = makeStore()
+    store.setState({ catVisible: true })
+
+    store.getState().clickCat()
+
+    expect(store.getState().game.stats.caughtCat).toBe(true)
+    expect(store.getState().catBoxOpen).toBe(true)
+    expect(store.getState().toasts.map((t) => t.title)).toContain('Достижение: Мяу')
+  })
+
+  it('opens a box and applies the reward', () => {
+    const store = makeStore()
+    store.setState({ catBoxOpen: true })
+
+    store.getState().chooseCatBox()
+
+    expect(store.getState().game.resources.alloy).toBe(20)
+    expect(store.getState().catBoxOpen).toBe(false)
+  })
+})
+
+describe('gameStore disco', () => {
+  it('marks the secret and sets the timer', () => {
+    const store = makeStore()
+
+    store.getState().triggerDisco()
+
+    expect(store.getState().game.stats.discoUsed).toBe(true)
+    expect(store.getState().discoUntil).toBe(NOW + 10_000)
+    expect(store.getState().toasts.map((t) => t.title)).toContain('Достижение: Диско')
+  })
+})
+
+describe('gameStore auto drill', () => {
+  it('adds ore in the live tick only', () => {
+    const store = makeStore({ shipUpgrades: ['autoDrill'], eventCountdown: 100 })
+
+    store.getState().tick(NOW + 2000)
+
+    expect(store.getState().game.resources.ore).toBe(2)
+    expect(store.getState().game.stats.noClickSeconds).toBe(2)
   })
 })

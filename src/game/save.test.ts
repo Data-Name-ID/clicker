@@ -22,10 +22,14 @@ describe('serialize / deserialize', () => {
 })
 
 describe('migrate', () => {
-  it('fills a bare v1 save with defaults', () => {
+  it('migrates a v1 save to v2 with defaults', () => {
     const restored = migrate({ version: 1, resources: { ore: 10 }, buildings: { drone: 2 }, savedAt: 5 })
 
     expect(restored).toEqual(buildState({ resources: { ore: 10 }, buildings: { drone: 2 }, savedAt: 5 }))
+    expect(restored.version).toBe(2)
+    expect(restored.resources.core).toBe(0)
+    expect(restored.protocol).toBe('balance')
+    expect(restored.shipUpgrades).toEqual([])
   })
 
   it('drops unknown upgrade ids', () => {
@@ -65,7 +69,7 @@ describe('applyOffline', () => {
 
     expect(result.elapsed).toBe(28_800)
     expect(result.state.resources.ore).toBe(144_000)
-    expect(result.gains).toEqual({ ore: 144_000, alloy: 0, chip: 0 })
+    expect(result.gains).toEqual({ ore: 144_000, alloy: 0, chip: 0, core: 0 })
   })
 
   it('caps 9 hours at 8', () => {

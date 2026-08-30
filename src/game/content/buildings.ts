@@ -10,7 +10,7 @@ export type BuildingDef =
       baseCost: Cost
     }
   | {
-      id: 'smelter' | 'factory'
+      id: 'smelter' | 'factory' | 'neurolab'
       kind: 'processor'
       name: string
       description: string
@@ -69,6 +69,17 @@ export const BUILDINGS: BuildingDef[] = [
     description: '+40 руды/с',
     rate: 40,
     baseCost: { alloy: 3000, chip: 100 },
+  },
+  {
+    id: 'neurolab',
+    kind: 'processor',
+    name: 'Нейролаборатория',
+    description: '−10 чипов/с → +0,5 ядра/с',
+    input: 'chip',
+    output: 'core',
+    inputRate: 10,
+    outputRate: 0.5,
+    baseCost: { chip: 2000 },
   },
 ]
 

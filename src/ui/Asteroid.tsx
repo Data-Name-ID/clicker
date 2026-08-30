@@ -21,13 +21,19 @@ export function Asteroid() {
   const value = useGame((s) => clickValue(s.game))
   const boostRemaining = useGame((s) => s.game.effects.boostRemaining)
   const meteorRemaining = useGame((s) => s.game.effects.meteorRemaining)
+  const now = useGame((s) => s.now)
+  const discoUntil = useGame((s) => s.discoUntil)
   const [bursts, setBursts] = useState<Burst[]>([])
   const [hit, setHit] = useState(0)
   const seq = useRef(0)
 
+  const beat = boostRemaining > 0 && now % 2000 < 400
+  const disco = discoUntil > now
+
   const onClick = useCallback(
     (event: MouseEvent<HTMLButtonElement>) => {
-      click()
+      const rhythmHit = boostRemaining > 0 && Date.now() % 2000 < 400
+      click(rhythmHit)
       const rect = event.currentTarget.getBoundingClientRect()
       seq.current += 1
       const id = seq.current
@@ -36,7 +42,7 @@ export function Asteroid() {
         id,
         x: event.clientX - rect.left || rect.width / 2,
         y: event.clientY - rect.top || rect.height / 2,
-        value,
+        value: value * (Math.random() < 0.01 ? -1 : 1),
         shards: Array.from({ length: count }, (_, i) => {
           const angle = (Math.PI * 2 * i) / count + Math.random()
           const dist = 30 + Math.random() * 30
@@ -47,7 +53,7 @@ export function Asteroid() {
       setHit((n) => n + 1)
       setTimeout(() => setBursts((list) => list.filter((b) => b.id !== id)), BURST_LIFETIME_MS)
     },
-    [click, value],
+    [click, value, boostRemaining],
   )
 
   return (
@@ -55,7 +61,7 @@ export function Asteroid() {
       <div className="asteroid-stage">
         <button
           type="button"
-          className={`asteroid ${meteorRemaining > 0 ? 'asteroid--meteor' : ''}`}
+          className={`asteroid ${meteorRemaining > 0 ? 'asteroid--meteor' : ''} ${beat ? 'asteroid--beat' : ''} ${disco ? 'asteroid--disco' : ''}`}
           onClick={onClick}
           aria-label="Добыть руду"
           data-tour="asteroid"
@@ -64,7 +70,10 @@ export function Asteroid() {
         </button>
         {bursts.map((b) => (
           <div className="burst" key={b.id} style={{ left: b.x, top: b.y }} aria-hidden="true">
-            <span className="burst__value">+{formatNumber(b.value)}</span>
+            <span className="burst__value">
+              +{formatNumber(Math.abs(b.value))}
+              {b.value < 0 ? ' (ого!)' : ''}
+            </span>
             {b.shards.map((s, i) => (
               <img
                 key={i}
@@ -79,7 +88,10 @@ export function Asteroid() {
           </div>
         ))}
       </div>
-      <p className="asteroid__hint">Клик: +{formatNumber(value)} руды</p>
+      <p className="asteroid__hint">
+        Клик: +{formatNumber(value)} руды
+        {boostRemaining > 0 && <span className={`asteroid__beat ${beat ? 'asteroid__beat--on' : ''}`}> ♪ в такт ×2</span>}
+      </p>
       <div className="asteroid-actions" data-tour="ad-buttons">
         <AdButton
           placement="boost"

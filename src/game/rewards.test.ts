@@ -54,10 +54,10 @@ describe('applyOfflineDouble', () => {
   it('adds the gains once more to resources and stats', () => {
     const state = buildState({ resources: { ore: 100, alloy: 10, chip: 1 }, stats: { runChips: 1 } })
 
-    const next = applyOfflineDouble(state, { ore: 50, alloy: 5, chip: 2 })
+    const next = applyOfflineDouble(state, { ore: 50, alloy: 5, chip: 2, core: 0 })
 
-    expect(next.resources).toEqual({ ore: 150, alloy: 15, chip: 3 })
-    expect(next.stats.totalProduced).toEqual({ ore: 50, alloy: 5, chip: 2 })
+    expect(next.resources).toEqual({ ore: 150, alloy: 15, chip: 3, core: 0 })
+    expect(next.stats.totalProduced).toEqual({ ore: 50, alloy: 5, chip: 2, core: 0 })
     expect(next.stats.runChips).toBe(3)
   })
 })

@@ -4,9 +4,10 @@ import { resourceName } from '../game/content/resources'
 import { canAfford, costEntries, costOf, maxAffordable } from '../game/economy'
 import { formatNumber, formatPercent } from '../game/format'
 import type { BuildingId } from '../game/types'
+import { useGameApi } from '../store/context'
 import { useGame } from '../store/context'
 
-export type BuyAmount = 1 | 10 | 'max'
+export type BuyAmount = 1 | 10 | 100 | 'max'
 
 interface BuildingCardProps {
   id: BuildingId
@@ -20,8 +21,9 @@ export function BuildingCard({ id, amount }: BuildingCardProps) {
   const efficiency = useGame((s) => (def.kind === 'processor' ? s.game.efficiency[def.id] : 1))
   const buy = useGame((s) => s.buy)
 
-  const count = amount === 'max' ? Math.max(1, maxAffordable(id, owned, resources)) : amount
-  const cost = costOf(id, owned, count)
+  const store = useGameApi()
+  const count = amount === 'max' ? Math.max(1, maxAffordable(store.getState().game, id, owned, resources)) : amount
+  const cost = costOf(store.getState().game, id, owned, count)
   const affordable = canAfford(resources, cost)
   const starving = def.kind === 'processor' && efficiency < 0.999
 

@@ -22,9 +22,9 @@ export function simulateChunked(state: GameState, seconds: number, chunk = 60): 
 }
 
 function earliestExpiry(state: GameState, dt: number): number | null {
-  const candidates = [state.effects.boostRemaining, state.effects.meteorRemaining].filter(
-    (r) => r > 0 && r < dt,
-  )
+  const timers = [state.effects.boostRemaining, state.effects.meteorRemaining]
+  if (state.effects.event) timers.push(state.effects.event.remaining)
+  const candidates = timers.filter((r) => r > 0 && r < dt)
   return candidates.length ? Math.min(...candidates) : null
 }
 
@@ -34,12 +34,23 @@ interface ProcessResult {
   efficiency: number
 }
 
-function process(state: GameState, id: ProcessorId, available: number, dt: number, m: ReturnType<typeof multipliers>): ProcessResult {
+function process(
+  state: GameState,
+  id: ProcessorId,
+  available: number,
+  dt: number,
+  m: ReturnType<typeof multipliers>,
+): ProcessResult {
   const rates = processorRates(state, id, m)
   const want = rates.input * dt
-  if (want <= 0) return { eaten: 0, produced: 0, efficiency: 1 }
+  if (want <= 0) {
+    if (rates.halted && state.buildings[id] > 0) return { eaten: 0, produced: 0, efficiency: 0 }
+    return { eaten: 0, produced: 0, efficiency: 1 }
+  }
   const eaten = Math.min(want, available)
-  return { eaten, produced: eaten * rates.yieldRatio, efficiency: eaten / want }
+  const efficiency = eaten / want
+  const effective = Math.max(efficiency, rates.minEfficiency)
+  return { eaten, produced: want * effective * rates.yieldRatio, efficiency }
 }
 
 function step(state: GameState, dt: number): GameState {
@@ -49,13 +60,18 @@ function step(state: GameState, dt: number): GameState {
   const smelter = process(state, 'smelter', ore, dt, m)
   const alloy = state.resources.alloy + smelter.produced
   const factory = process(state, 'factory', alloy, dt, m)
+  const chip = state.resources.chip + factory.produced
+  const neurolab = process(state, 'neurolab', chip, dt, m)
 
   const resources: Resources = {
     ore: ore - smelter.eaten,
     alloy: alloy - factory.eaten,
-    chip: state.resources.chip + factory.produced,
+    chip: chip - neurolab.eaten,
+    core: state.resources.core + neurolab.produced,
   }
   const smelterIdle = state.buildings.smelter > 0 && smelter.efficiency < IDLE_EPSILON
+  const event = state.effects.event
+  const eventRemaining = event ? event.remaining - dt : 0
 
   return {
     ...state,
@@ -66,19 +82,23 @@ function step(state: GameState, dt: number): GameState {
         ore: state.stats.totalProduced.ore + oreProduced,
         alloy: state.stats.totalProduced.alloy + smelter.produced,
         chip: state.stats.totalProduced.chip + factory.produced,
+        core: state.stats.totalProduced.core + neurolab.produced,
       },
       runChips: state.stats.runChips + factory.produced,
+      runCores: state.stats.runCores + neurolab.produced,
       smelterIdleSeconds: smelterIdle ? state.stats.smelterIdleSeconds + dt : 0,
       peakResources: {
         ore: Math.max(state.stats.peakResources.ore, resources.ore),
         alloy: Math.max(state.stats.peakResources.alloy, resources.alloy),
         chip: Math.max(state.stats.peakResources.chip, resources.chip),
+        core: Math.max(state.stats.peakResources.core, resources.core),
       },
     },
     effects: {
       boostRemaining: Math.max(0, state.effects.boostRemaining - dt),
       meteorRemaining: Math.max(0, state.effects.meteorRemaining - dt),
+      event: event && eventRemaining > 0 ? { ...event, remaining: eventRemaining } : null,
     },
-    efficiency: { smelter: smelter.efficiency, factory: factory.efficiency },
+    efficiency: { smelter: smelter.efficiency, factory: factory.efficiency, neurolab: neurolab.efficiency },
   }
 }

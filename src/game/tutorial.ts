@@ -67,6 +67,14 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     isDone: (s) => s.buildings.factory >= 1,
   },
   {
+    id: 'cores',
+    kind: 'info',
+    title: 'ИИ-ядра',
+    text: 'Нейролаборатория варит из чипов ИИ-ядра. Каждые 50 ядер за забег умножают награду перелёта, а ещё ядра покупают самые мощные улучшения.',
+    hint: 'Ядра усиливают перелёт',
+    isDone: (s) => seen(s, 'cores'),
+  },
+  {
     id: 'prestige',
     kind: 'info',
     title: 'Перелёт',

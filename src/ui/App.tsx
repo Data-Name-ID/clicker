@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { TAB_ICONS } from '../assets/sprites'
 import { useGame } from '../store/context'
 import type { TabId } from '../store/gameStore'
@@ -5,6 +6,9 @@ import { AchievementList } from './AchievementList'
 import { AdModal } from './AdModal'
 import { Asteroid } from './Asteroid'
 import { BuildingList } from './BuildingList'
+import { CatOverlay } from './CatOverlay'
+import { EventBanner } from './EventBanner'
+import { EventOverlays } from './EventOverlays'
 import { MeteorShower } from './MeteorShower'
 import { OfflineModal } from './OfflineModal'
 import { PrestigePanel } from './PrestigePanel'
@@ -31,14 +35,32 @@ const PANELS: Record<TabId, () => React.JSX.Element> = {
   settings: SettingsPanel,
 }
 
+const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a']
+
 export function App() {
   const tab = useGame((s) => s.tab)
   const setTab = useGame((s) => s.setTab)
+  const triggerDisco = useGame((s) => s.triggerDisco)
+
+  useEffect(() => {
+    let position = 0
+    const onKey = (event: KeyboardEvent) => {
+      const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
+      position = key === KONAMI[position] ? position + 1 : key === KONAMI[0] ? 1 : 0
+      if (position === KONAMI.length) {
+        position = 0
+        triggerDisco()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [triggerDisco])
   const Panel = PANELS[tab]
 
   return (
     <div className="app">
       <ResourceBar />
+      <EventBanner />
       <main className="layout">
         <Asteroid />
         <div className="side">
@@ -73,6 +95,8 @@ export function App() {
         </div>
       </main>
       <MeteorShower />
+      <EventOverlays />
+      <CatOverlay />
       <Tutorial />
       <OfflineModal />
       <AdModal />

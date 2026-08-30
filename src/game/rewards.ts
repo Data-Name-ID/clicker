@@ -4,14 +4,24 @@ import { addResources } from './events'
 import { simulateChunked } from './tick'
 import type { GameState, Resources } from './types'
 
-export type AdPlacement = 'boost' | 'offlineDouble' | 'supply' | 'prestigeBonus' | 'meteorShower'
+export type AdPlacement =
+  | 'boost'
+  | 'offlineDouble'
+  | 'supply'
+  | 'prestigeBonus'
+  | 'meteorShower'
+  | 'artifactReroll'
+  | 'eventRush'
+  | 'catDouble'
 
 export const BOOST_DURATION = 10 * 60
 export const BOOST_COOLDOWN_MS = 30 * 60 * 1000
 export const SUPPLY_SECONDS = 30 * 60
-export const SUPPLY_COOLDOWN_MS = 60 * 60 * 1000
+export const SUPPLY_COOLDOWN_MS = 45 * 60 * 1000
 export const METEOR_DURATION = 30
-export const METEOR_COOLDOWN_MS = 15 * 60 * 1000
+export const METEOR_COOLDOWN_MS = 10 * 60 * 1000
+export const REROLL_COOLDOWN_MS = 30 * 60 * 1000
+export const EVENT_RUSH_COOLDOWN_MS = 10 * 60 * 1000
 export const THRUSTERS_MULTIPLIER = 1.5
 
 export const boostDuration = (state: GameState): number =>
@@ -69,6 +79,16 @@ export function applyAutoDrill(state: GameState, dt: number): GameState {
   return addResources(state, { ore: gain })
 }
 
+export const applyArtifactRerollCooldown = (state: GameState, now: number): GameState => ({
+  ...state,
+  cooldowns: { ...state.cooldowns, rerollUntil: now + REROLL_COOLDOWN_MS * cooldownScale(state) },
+})
+
+export const applyEventRushCooldown = (state: GameState, now: number): GameState => ({
+  ...state,
+  cooldowns: { ...state.cooldowns, eventRushUntil: now + EVENT_RUSH_COOLDOWN_MS * cooldownScale(state) },
+})
+
 export function cooldownRemaining(state: GameState, placement: AdPlacement, now: number): number {
   switch (placement) {
     case 'boost':
@@ -77,6 +97,10 @@ export function cooldownRemaining(state: GameState, placement: AdPlacement, now:
       return Math.max(0, state.cooldowns.supplyUntil - now)
     case 'meteorShower':
       return Math.max(0, state.cooldowns.meteorUntil - now)
+    case 'artifactReroll':
+      return Math.max(0, state.cooldowns.rerollUntil - now)
+    case 'eventRush':
+      return Math.max(0, state.cooldowns.eventRushUntil - now)
     default:
       return 0
   }

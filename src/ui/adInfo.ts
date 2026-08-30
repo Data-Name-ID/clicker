@@ -3,8 +3,10 @@ import { formatDuration } from '../game/format'
 import {
   BOOST_COOLDOWN_MS,
   BOOST_DURATION,
+  EVENT_RUSH_COOLDOWN_MS,
   METEOR_COOLDOWN_MS,
   METEOR_DURATION,
+  REROLL_COOLDOWN_MS,
   SUPPLY_COOLDOWN_MS,
   SUPPLY_SECONDS,
 } from '../game/rewards'
@@ -42,6 +44,21 @@ export const AD_INFO: Record<AdPlacement, AdInfo> = {
   prestigeBonus: {
     title: 'Перелёт с бонусом',
     effect: 'Тёмной материи за перелёт ×1,5.',
+    cooldown: 'Без перезарядки.',
+  },
+  artifactReroll: {
+    title: 'Сменить артефакт',
+    effect: 'Случайный другой артефакт на этот забег.',
+    cooldown: `Перезарядка ${minutes(REROLL_COOLDOWN_MS)}.`,
+  },
+  eventRush: {
+    title: 'Вызвать событие',
+    effect: 'Немедленно запускает случайное событие.',
+    cooldown: `Перезарядка ${minutes(EVENT_RUSH_COOLDOWN_MS)}.`,
+  },
+  catDouble: {
+    title: 'Открыть два ящика',
+    effect: 'Кот разрешит открыть два ящика вместо одного.',
     cooldown: 'Без перезарядки.',
   },
 }

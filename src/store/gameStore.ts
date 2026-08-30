@@ -3,7 +3,7 @@ import { adProvider as defaultAdProvider } from '../ads'
 import type { AdPlacement, AdProvider } from '../ads/AdProvider'
 import { grantAchievements, newAchievements } from '../game/achievements'
 import { achievementDef } from '../game/content/achievements'
-import { pickArtifact, artifactDef } from '../game/content/artifacts'
+import { pickArtifact, rerollArtifact, artifactDef } from '../game/content/artifacts'
 import { eventDef } from '../game/content/events'
 import { buyShipUpgrade, shipUpgradeDef } from '../game/content/ship'
 import { applyClick, buyBuilding, buyUpgrade, setProtocol } from '../game/economy'
@@ -20,14 +20,17 @@ import {
   nextCatDelay,
   nextEventDelay,
   openCatBox,
+  startRandomEvent,
   tickEvents,
   tickLive,
   useDisco,
 } from '../game/events'
 import { applyPrestige, bonusDarkMatterGain, canPrestige, darkMatterGain } from '../game/prestige'
 import {
+  applyArtifactRerollCooldown,
   applyAutoDrill,
   applyBoost,
+  applyEventRushCooldown,
   applyMeteorShower,
   applyOfflineDouble,
   applySupply,
@@ -256,6 +259,9 @@ export function createGameStore({
         if (adBusy || !ads.isAvailable(placement) || cooldownRemaining(game, placement, now) > 0) return
         if (placement === 'prestigeBonus' && !canPrestige(game)) return
         if (placement === 'offlineDouble' && !get().offline) return
+        if (placement === 'artifactReroll' && !game.artifact) return
+        if (placement === 'eventRush' && game.effects.event) return
+        if (placement === 'catDouble' && !get().catBoxOpen) return
         set({ adBusy: placement })
         const result = await ads.showRewarded(placement)
         set({ adBusy: null })
@@ -280,6 +286,32 @@ export function createGameStore({
           case 'offlineDouble': {
             const gains = get().offline?.gains ?? zeroResources()
             commit(applyOfflineDouble(current, gains), { offline: null })
+            break
+          }
+          case 'artifactReroll': {
+            const next = applyArtifactRerollCooldown(rerollArtifact(current, random()), at)
+            commit(next)
+            if (next.artifact) {
+              const def = artifactDef(next.artifact)
+              pushToast('event', `Артефакт: ${def.name}`, def.description)
+            }
+            break
+          }
+          case 'eventRush': {
+            const rushed = startRandomEvent(current, [random(), random()])
+            commit(applyEventRushCooldown(rushed.state, at))
+            if (rushed.started) {
+              const def = eventDef(rushed.started)
+              pushToast('event', def.name, def.description)
+            }
+            break
+          }
+          case 'catDouble': {
+            const first = openCatBox(current, random())
+            const afterFirst = addResources(current, first.delta)
+            const second = openCatBox(afterFirst, random())
+            commit(addResources(afterFirst, second.delta), { catBoxOpen: false })
+            pushToast('event', 'Посылка от кота ×2', `${first.text} ${second.text}`)
             break
           }
           case 'prestigeBonus': {

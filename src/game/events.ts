@@ -68,6 +68,22 @@ export function tickEvents(state: GameState, dt: number, rolls: [number, number]
   }
 }
 
+export function startRandomEvent(state: GameState, rolls: [number, number]): EventTickResult {
+  if (state.effects.event) return { state, started: null }
+  const pool = eligibleEvents(state)
+  if (pool.length === 0) return { state, started: null }
+  const picked = pool[Math.min(pool.length - 1, Math.max(0, Math.floor(rolls[0] * pool.length)))]
+  return {
+    state: {
+      ...state,
+      effects: { ...state.effects, event: { id: picked.id, remaining: picked.duration } },
+      eventCountdown: nextEventDelay(state, rolls[1]),
+      stats: { ...state.stats, eventsSeen: state.stats.eventsSeen + 1 },
+    },
+    started: picked.id,
+  }
+}
+
 export const clearEvent = (state: GameState): GameState => ({
   ...state,
   effects: { ...state.effects, event: null },

@@ -22,6 +22,7 @@ export function Asteroid() {
   const boostRemaining = useGame((s) => s.game.effects.boostRemaining)
   const meteorRemaining = useGame((s) => s.game.effects.meteorRemaining)
   const now = useGame((s) => s.now)
+  const eventActive = useGame((s) => s.game.effects.event !== null)
   const discoUntil = useGame((s) => s.discoUntil)
   const [bursts, setBursts] = useState<Burst[]>([])
   const [hit, setHit] = useState(0)
@@ -105,6 +106,7 @@ export function Asteroid() {
           activeLabel="Дождь"
           activeRemaining={meteorRemaining}
         />
+        <AdButton placement="eventRush" label="Вызвать событие" disabled={eventActive} className="asteroid-actions__wide" />
       </div>
     </section>
   )

@@ -26,7 +26,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npx tsc -b
-      - run: npx vite build --base=/${{ github.event.repository.name }}/
+      - run: npx vite build --base=/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

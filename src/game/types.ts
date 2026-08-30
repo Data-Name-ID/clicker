@@ -167,6 +167,8 @@ export interface Cooldowns {
   boostUntil: number
   supplyUntil: number
   meteorUntil: number
+  rerollUntil: number
+  eventRushUntil: number
 }
 
 export interface Efficiency {
@@ -233,7 +235,7 @@ export function createInitialState(): GameState {
       discoUsed: false,
     },
     effects: { boostRemaining: 0, meteorRemaining: 0, event: null },
-    cooldowns: { boostUntil: 0, supplyUntil: 0, meteorUntil: 0 },
+    cooldowns: { boostUntil: 0, supplyUntil: 0, meteorUntil: 0, rerollUntil: 0, eventRushUntil: 0 },
     efficiency: { smelter: 1, factory: 1, neurolab: 1 },
     protocol: 'balance',
     artifact: null,

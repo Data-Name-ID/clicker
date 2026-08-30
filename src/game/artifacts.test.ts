@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildState } from '../../test/builders'
-import { ARTIFACTS, pickArtifact } from './content/artifacts'
+import { ARTIFACTS, pickArtifact, rerollArtifact } from './content/artifacts'
 import { clickValue, costOf, productionPerSecond } from './economy'
 import { applyBoost } from './rewards'
 
@@ -58,5 +58,20 @@ describe('artifact effects', () => {
     const next = applyBoost(buildState({ artifact: 'smuggledBooster' }), NOW)
 
     expect(next.cooldowns.boostUntil).toBe(NOW + 600_000 + 900_000)
+  })
+})
+
+describe('rerollArtifact', () => {
+  it('never returns the current artifact', () => {
+    const next = rerollArtifact(buildState({ artifact: 'cometShard', artifactsSeen: ['cometShard'] }), 0)
+
+    expect(next.artifact).toBe('iridiumVein')
+    expect(next.artifactsSeen).toEqual(['cometShard', 'iridiumVein'])
+  })
+
+  it('falls back to the full pool except the current one', () => {
+    const state = buildState({ artifact: 'cometShard', artifactsSeen: ARTIFACTS.map((a) => a.id) })
+
+    expect(rerollArtifact(state, 0).artifact).toBe('iridiumVein')
   })
 })

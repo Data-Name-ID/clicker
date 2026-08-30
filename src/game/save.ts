@@ -117,6 +117,8 @@ function normalize(raw: Raw): GameState {
       boostUntil: num(cooldowns.boostUntil, 0),
       supplyUntil: num(cooldowns.supplyUntil, 0),
       meteorUntil: num(cooldowns.meteorUntil, 0),
+      rerollUntil: num(cooldowns.rerollUntil, 0),
+      eventRushUntil: num(cooldowns.eventRushUntil, 0),
     },
     efficiency: {
       smelter: num(efficiency.smelter, 1),

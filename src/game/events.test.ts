@@ -9,6 +9,7 @@ import {
   catchStrayDrone,
   nextEventDelay,
   openCatBox,
+  startRandomEvent,
   tickEvents,
   tickLive,
 } from './events'
@@ -160,5 +161,20 @@ describe('openCatBox', () => {
 
   it('is empty on a high roll', () => {
     expect(openCatBox(buildState(), 0.9).delta).toEqual({})
+  })
+})
+
+describe('startRandomEvent', () => {
+  it('starts immediately when idle', () => {
+    const result = startRandomEvent(buildState(), [0, 0.5])
+
+    expect(result.started).toBe('goldVein')
+    expect(result.state.effects.event).toEqual({ id: 'goldVein', remaining: 30 })
+  })
+
+  it('does nothing while an event is active', () => {
+    const state = buildState({ effects: { event: { id: 'goldVein', remaining: 5 } } })
+
+    expect(startRandomEvent(state, [0, 0.5]).started).toBeNull()
   })
 })

@@ -40,6 +40,7 @@ export function PrestigePanel() {
           <span className="artifact__label">Артефакт забега:</span>
           <b>{artifactDef(artifact).name}</b>
           <span className="muted"> — {artifactDef(artifact).description}</span>
+          <AdButton placement="artifactReroll" label="Сменить артефакт" className="artifact__reroll" />
         </div>
       )}
       <div className="progress" role="progressbar" aria-valuenow={Math.floor(progress * 100)} aria-valuemin={0} aria-valuemax={100}>

@@ -23,6 +23,17 @@ export const ARTIFACTS: ArtifactDef[] = [
 
 export const artifactDef = (id: ArtifactId): ArtifactDef => ARTIFACTS.find((a) => a.id === id)!
 
+export function rerollArtifact(state: GameState, roll: number): GameState {
+  let pool = ARTIFACTS.filter((a) => !state.artifactsSeen.includes(a.id) && a.id !== state.artifact)
+  if (pool.length === 0) pool = ARTIFACTS.filter((a) => a.id !== state.artifact)
+  const picked = pool[Math.min(pool.length - 1, Math.max(0, Math.floor(roll * pool.length)))]
+  return {
+    ...state,
+    artifact: picked.id,
+    artifactsSeen: state.artifactsSeen.includes(picked.id) ? state.artifactsSeen : [...state.artifactsSeen, picked.id],
+  }
+}
+
 export function pickArtifact(state: GameState, roll: number): GameState {
   let pool = ARTIFACTS.filter((a) => !state.artifactsSeen.includes(a.id))
   let seen = state.artifactsSeen

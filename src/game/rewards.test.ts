@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { buildState } from '../../test/builders'
 import {
+  applyArtifactRerollCooldown,
   applyBoost,
+  applyEventRushCooldown,
   applyMeteorShower,
   applyOfflineDouble,
   applySupply,
@@ -31,22 +33,22 @@ describe('applySupply', () => {
     expect(next.resources.chip).toBeCloseTo(720, 6)
   })
 
-  it('sets a 1 hour cooldown and keeps effect timers', () => {
+  it('sets a 45 minute cooldown and keeps effect timers', () => {
     const state = buildState({ effects: { boostRemaining: 300 } })
 
     const next = applySupply(state, NOW)
 
-    expect(next.cooldowns.supplyUntil).toBe(NOW + 60 * 60 * 1000)
+    expect(next.cooldowns.supplyUntil).toBe(NOW + 45 * 60 * 1000)
     expect(next.effects.boostRemaining).toBe(300)
   })
 })
 
 describe('applyMeteorShower', () => {
-  it('starts a 30 second shower with a 15 minute cooldown', () => {
+  it('starts a 30 second shower with a 10 minute cooldown', () => {
     const next = applyMeteorShower(buildState(), NOW)
 
     expect(next.effects.meteorRemaining).toBe(30)
-    expect(next.cooldowns.meteorUntil).toBe(NOW + 15 * 60 * 1000)
+    expect(next.cooldowns.meteorUntil).toBe(NOW + 10 * 60 * 1000)
   })
 })
 
@@ -79,5 +81,24 @@ describe('cooldownRemaining', () => {
 describe('recordAdWatched', () => {
   it('increments the counter', () => {
     expect(recordAdWatched(buildState({ stats: { adsWatched: 9 } })).stats.adsWatched).toBe(10)
+  })
+})
+
+describe('new ad cooldowns', () => {
+  it('artifact reroll charges for 30 minutes', () => {
+    const next = applyArtifactRerollCooldown(buildState(), NOW)
+
+    expect(next.cooldowns.rerollUntil).toBe(NOW + 30 * 60 * 1000)
+    expect(cooldownRemaining(next, 'artifactReroll', NOW + 60_000)).toBe(29 * 60 * 1000)
+  })
+
+  it('event rush charges for 10 minutes', () => {
+    const next = applyEventRushCooldown(buildState(), NOW)
+
+    expect(cooldownRemaining(next, 'eventRush', NOW)).toBe(10 * 60 * 1000)
+  })
+
+  it('cat double has no cooldown', () => {
+    expect(cooldownRemaining(buildState(), 'catDouble', NOW)).toBe(0)
   })
 })

@@ -1287,3 +1287,11 @@ b {
 .toast--event {
   border-color: #8cdcff;
 }
+
+.artifact__reroll {
+  margin-top: 8px;
+}
+
+.asteroid-actions__wide {
+  grid-column: 1 / -1;
+}

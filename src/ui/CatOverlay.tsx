@@ -1,5 +1,6 @@
 import { SPRITES } from '../assets/sprites'
 import { useGame } from '../store/context'
+import { AdButton } from './AdButton'
 
 export function CatOverlay() {
   const catVisible = useGame((s) => s.catVisible)
@@ -25,6 +26,9 @@ export function CatOverlay() {
                   📦
                 </button>
               ))}
+            </div>
+            <div className="actions">
+              <AdButton placement="catDouble" label="Открыть два ящика" />
             </div>
           </div>
         </div>

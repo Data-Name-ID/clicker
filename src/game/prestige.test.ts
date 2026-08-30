@@ -60,7 +60,7 @@ describe('applyPrestige', () => {
     expect(after.stats.clicks).toBe(250)
     expect(after.stats.totalProduced).toEqual({ ore: 1e6, alloy: 5e4, chip: 2e4, core: 0 })
     expect(after.stats.adsWatched).toBe(3)
-    expect(after.cooldowns).toEqual({ boostUntil: 123, supplyUntil: 456, meteorUntil: 789 })
+    expect(after.cooldowns).toEqual({ boostUntil: 123, supplyUntil: 456, meteorUntil: 789, rerollUntil: 0, eventRushUntil: 0 })
   })
 })
 

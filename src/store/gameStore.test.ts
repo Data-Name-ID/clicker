@@ -197,3 +197,41 @@ describe('gameStore auto drill', () => {
     expect(store.getState().game.stats.noClickSeconds).toBe(2)
   })
 })
+
+describe('gameStore new ad placements', () => {
+  it('rerolls the artifact for an ad', async () => {
+    const store = makeStore({ artifact: 'cometShard', artifactsSeen: ['cometShard'] }, { ads: stubAds('rewarded') })
+
+    await store.getState().watchAd('artifactReroll')
+
+    expect(store.getState().game.artifact).not.toBe('cometShard')
+    expect(store.getState().game.cooldowns.rerollUntil).toBe(NOW + 30 * 60 * 1000)
+  })
+
+  it('ignores the reroll without an artifact', async () => {
+    const store = makeStore({}, { ads: stubAds('rewarded') })
+
+    await store.getState().watchAd('artifactReroll')
+
+    expect(store.getState().game.stats.adsWatched).toBe(0)
+  })
+
+  it('rushes a random event for an ad', async () => {
+    const store = makeStore({}, { ads: stubAds('rewarded') })
+
+    await store.getState().watchAd('eventRush')
+
+    expect(store.getState().game.effects.event).not.toBeNull()
+    expect(store.getState().game.cooldowns.eventRushUntil).toBe(NOW + 10 * 60 * 1000)
+  })
+
+  it('opens two cat boxes for an ad', async () => {
+    const store = makeStore({}, { ads: stubAds('rewarded') })
+    store.setState({ catBoxOpen: true })
+
+    await store.getState().watchAd('catDouble')
+
+    expect(store.getState().game.resources.alloy).toBe(40)
+    expect(store.getState().catBoxOpen).toBe(false)
+  })
+})

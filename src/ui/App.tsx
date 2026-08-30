@@ -10,6 +10,7 @@ import { OfflineModal } from './OfflineModal'
 import { PrestigePanel } from './PrestigePanel'
 import { ResourceBar } from './ResourceBar'
 import { SettingsPanel } from './SettingsPanel'
+import { StartScreen } from './StartScreen'
 import { Toasts } from './Toast'
 import { Tutorial } from './Tutorial'
 import { UpgradeList } from './UpgradeList'
@@ -76,6 +77,7 @@ export function App() {
       <OfflineModal />
       <AdModal />
       <Toasts />
+      <StartScreen />
     </div>
   )
 }

@@ -47,6 +47,7 @@ export interface GameStore {
   adBusy: AdPlacement | null
   tab: TabId
   tourAck: TutorialStepId | null
+  started: boolean
   click(): void
   buy(id: BuildingId, count: number | 'max'): void
   buyUpgrade(id: UpgradeId): void
@@ -62,6 +63,7 @@ export interface GameStore {
   dismissTutorial(): void
   ackTutorial(step: TutorialStepId | null): void
   setTab(tab: TabId): void
+  start(): void
   notify(kind: ToastKind, title: string, text?: string): void
   dismissToast(id: number): void
 }
@@ -115,6 +117,7 @@ export function createGameStore({
       adBusy: null,
       tab: 'buildings',
       tourAck: null,
+      started: false,
 
       click: () => commit(applyClick(get().game)),
 
@@ -231,6 +234,8 @@ export function createGameStore({
       ackTutorial: (step) => set({ tourAck: step }),
 
       setTab: (tab) => set({ tab }),
+
+      start: () => set({ started: true }),
 
       notify: pushToast,
 

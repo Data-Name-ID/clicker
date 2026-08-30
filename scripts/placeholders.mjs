@@ -447,6 +447,36 @@ function resCore() {
 
 resCore()
 
+function cracks(stage) {
+  const c = new Canvas(96, 96)
+  const random = rng(300 + stage * 97)
+  const lines = 2 + stage * 2
+  for (let l = 0; l < lines; l += 1) {
+    let x = 30 + random() * 36
+    let y = 30 + random() * 36
+    let dx = random() < 0.5 ? 1 : -1
+    let dy = random() < 0.5 ? 1 : -1
+    const len = 14 + random() * 20
+    for (let i = 0; i < len; i += 1) {
+      const cx = x + 0.5 - 48
+      const cy = y + 0.5 - 48
+      if (Math.hypot(cx, cy) < 36) {
+        c.set(Math.round(x), Math.round(y), [30, 24, 20, 200])
+        if (random() < 0.4) c.set(Math.round(x) + 1, Math.round(y), [30, 24, 20, 140])
+      }
+      x += dx * (random() < 0.7 ? 1 : 0)
+      y += dy * (random() < 0.7 ? 1 : 0)
+      if (random() < 0.15) dx = -dx
+      if (random() < 0.15) dy = -dy
+    }
+  }
+  c.save(`cracks-${stage}`)
+}
+
+cracks(1)
+cracks(2)
+cracks(3)
+
 building('neurolab', (c) => {
   c.rect(5, 18, 22, 10, shade(STEEL, 0.8))
   c.circle(16, 14, 9, shade([90, 70, 120], 1))

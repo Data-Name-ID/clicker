@@ -66,7 +66,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'smelter1',
     name: 'Плазменная печь',
-    description: 'Плавильни: вход и выход ×2',
+    description: 'Плавильни работают в 2 раза быстрее',
     effect: { target: 'smelter', input: 2, output: 2 },
     cost: { alloy: 300 },
     requirement: '10 плавилен',
@@ -84,7 +84,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'smelter2',
     name: 'Катализатор',
-    description: 'Плавильни: выход ×1,5 при том же входе',
+    description: 'Плавильни дают +50 % сплава без роста расхода руды',
     effect: { target: 'smelter', input: 1, output: 1.5 },
     cost: { chip: 50 },
     requirement: '25 плавилен',
@@ -102,7 +102,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'factory1',
     name: 'Нанолитография',
-    description: 'Фабрики: вход и выход ×2',
+    description: 'Фабрики работают в 2 раза быстрее',
     effect: { target: 'factory', input: 2, output: 2 },
     cost: { chip: 100 },
     requirement: '10 фабрик',
@@ -120,7 +120,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'factory2',
     name: 'Чистые комнаты',
-    description: 'Фабрики: выход ×1,5',
+    description: 'Фабрики дают +50 % чипов без роста расхода сплава',
     effect: { target: 'factory', input: 1, output: 1.5 },
     cost: { chip: 1000 },
     requirement: '25 фабрик',
@@ -147,7 +147,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'crowd',
     name: 'Эффект толпы',
-    description: 'Каждый 10-й клик даёт ×10',
+    description: 'Каждый десятый клик приносит в 10 раз больше руды',
     effect: { target: 'special' },
     cost: { ore: 5000 },
     requirement: '500 кликов',
@@ -156,7 +156,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ionwind',
     name: 'Ионный ветер',
-    description: 'Дроны: +1 % за каждый экскаватор',
+    description: 'Каждый экскаватор ускоряет дронов на 1 %',
     effect: { target: 'special' },
     cost: { alloy: 800 },
     requirement: '10 экскаваторов',
@@ -190,9 +190,18 @@ export const UPGRADES: UpgradeDef[] = [
     isUnlocked: (s) => s.buildings.drone >= 25,
   },
   {
+    id: 'crit1',
+    name: 'Резонансный удар',
+    description: 'Шанс крита 5 % → 10 %',
+    effect: { target: 'special' },
+    cost: { alloy: 1500 },
+    requirement: '1 000 кликов',
+    isUnlocked: (s) => s.stats.clicks >= 1_000,
+  },
+  {
     id: 'lab1',
     name: 'Параллельные вычисления',
-    description: 'Нейролаборатории: вход и выход ×2',
+    description: 'Нейролаборатории работают в 2 раза быстрее',
     effect: { target: 'neurolab', input: 2, output: 2 },
     cost: { core: 100 },
     requirement: '5 нейролабораторий',
@@ -237,7 +246,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'factory3',
     name: 'Самосборка',
-    description: 'Фабрики: выход ×2',
+    description: 'Фабрики дают вдвое больше чипов без роста расхода',
     effect: { target: 'factory', input: 1, output: 2 },
     cost: { core: 1000 },
     requirement: '50 фабрик',
@@ -246,7 +255,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'smelter3',
     name: 'Квантовое сжатие',
-    description: 'Плавильни: вход и выход ×3',
+    description: 'Плавильни работают в 3 раза быстрее',
     effect: { target: 'smelter', input: 3, output: 3 },
     cost: { core: 1500 },
     requirement: '50 плавилен',
@@ -273,7 +282,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'singularity',
     name: 'Сингулярность',
-    description: 'Ядра в формуле тёмной материи ценнее (÷50 → ÷40)',
+    description: 'Награда перелёта: каждые 40 ядер (вместо 50) удваивают тёмную материю',
     effect: { target: 'special' },
     cost: { core: 10_000 },
     requirement: '3 перелёта',
@@ -282,3 +291,6 @@ export const UPGRADES: UpgradeDef[] = [
 ]
 
 export const upgradeDef = (id: UpgradeId): UpgradeDef => UPGRADES.find((u) => u.id === id)!
+
+export const availableUpgrades = (state: GameState): UpgradeDef[] =>
+  UPGRADES.filter((u) => !state.upgrades.includes(u.id) && u.isUnlocked(state))

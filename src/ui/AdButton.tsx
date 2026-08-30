@@ -1,4 +1,5 @@
-import { useEffect, useId, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { AdPlacement } from '../ads/AdProvider'
 import { adProvider } from '../ads'
 import { SPRITES } from '../assets/sprites'
@@ -6,6 +7,7 @@ import { formatDuration } from '../game/format'
 import { cooldownRemaining } from '../game/rewards'
 import { useGame } from '../store/context'
 import { AD_INFO, AD_WATCH_NOTE } from './adInfo'
+import { tipStyle } from './tipStyle'
 
 interface AdButtonProps {
   placement: AdPlacement
@@ -16,17 +18,6 @@ interface AdButtonProps {
   className?: string
 }
 
-const TIP_WIDTH = 280
-const TIP_MARGIN = 12
-
-function tipStyle(anchor: HTMLElement | null): CSSProperties {
-  if (!anchor) return {}
-  const r = anchor.getBoundingClientRect()
-  const width = Math.min(TIP_WIDTH, window.innerWidth - TIP_MARGIN * 2)
-  const left = Math.min(Math.max(TIP_MARGIN, r.left + r.width / 2 - width / 2), window.innerWidth - TIP_MARGIN - width)
-  const above = r.top > 180
-  return above ? { left, width, bottom: window.innerHeight - r.top + 8 } : { left, width, top: r.bottom + 8 }
-}
 
 export function AdButton({ placement, label, activeLabel, activeRemaining = 0, disabled, className }: AdButtonProps) {
   const cooldown = useGame((s) => cooldownRemaining(s.game, placement, s.now))
@@ -92,15 +83,17 @@ export function AdButton({ placement, label, activeLabel, activeRemaining = 0, d
       >
         ?
       </button>
-      {open && (
-        <div className="tooltip frame" role="tooltip" id={tipId} style={tipStyle(anchor.current)}>
-          <b className="tooltip__title">{info.title}</b>
-          <span>{info.effect}</span>
-          <span className="tooltip__muted">{info.cooldown}</span>
-          <span className="tooltip__muted">{AD_WATCH_NOTE}</span>
-          {cooldown > 0 && !active && <span className="tooltip__cooldown">Снова через {formatDuration(cooldown)}</span>}
-        </div>
-      )}
+      {open &&
+        createPortal(
+          <div className="tooltip frame" role="tooltip" id={tipId} style={tipStyle(anchor.current)}>
+            <b className="tooltip__title">{info.title}</b>
+            <span>{info.effect}</span>
+            <span className="tooltip__muted">{info.cooldown}</span>
+            <span className="tooltip__muted">{AD_WATCH_NOTE}</span>
+            {cooldown > 0 && !active && <span className="tooltip__cooldown">Снова через {formatDuration(cooldown)}</span>}
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }

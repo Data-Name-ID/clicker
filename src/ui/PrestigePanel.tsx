@@ -50,12 +50,12 @@ export function PrestigePanel() {
         </span>
       </div>
       <p>
-        Награда: <b className="dm">{gain}</b> ТМ
-        <span className="muted">
-          {' '}
-          (ядра за забег: {formatNumber(runCores)} → ×{coresMult.toFixed(2)})
-        </span>
+        Награда: <b className="dm">{gain}</b> тёмной материи
         {ready ? '' : ` — нужно ещё ${formatNumber(PRESTIGE_THRESHOLD - runChips)} чипов`}
+      </p>
+      <p className="muted">
+        ИИ-ядра усиливают награду: {formatNumber(runCores)} ядер за этот забег дают множитель ×{coresMult.toFixed(2)}.
+        Каждые 50 ядер — примерно плюс одна награда целиком.
       </p>
       <div className="actions">
         <button type="button" className="btn btn--primary" disabled={!ready} onClick={prestige}>

@@ -6,8 +6,9 @@ import { formatNumber } from '../game/format'
 import { useGame } from '../store/context'
 
 export function UpgradeList() {
-  const bought = useGame((s) => s.game.upgrades)
-  const resources = useGame((s) => s.game.resources)
+  const game = useGame((s) => s.game)
+  const bought = game.upgrades
+  const resources = game.resources
   const available = useGame(
     useShallow((s) => UPGRADES.filter((u) => !s.game.upgrades.includes(u.id) && u.isUnlocked(s.game)).map((u) => u.id)),
   )
@@ -26,7 +27,12 @@ export function UpgradeList() {
               <p className="upgrade__effect">{def.description}</p>
               <p className="upgrade__req">Условие: {def.requirement}</p>
             </div>
-            <button type="button" className="btn btn--buy" disabled={!affordable} onClick={() => buyUpgrade(id)}>
+            <button
+              type="button"
+              className={`btn btn--buy ${affordable ? 'btn--ready' : ''}`}
+              disabled={!affordable}
+              onClick={() => buyUpgrade(id)}
+            >
               <span className="btn__label">Купить</span>
               <span className="btn__cost">
                 {costEntries(def.cost).map(([res, value]) => (

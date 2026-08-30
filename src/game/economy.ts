@@ -17,6 +17,14 @@ export const DARK_MATTER_BONUS = 0.1
 export const BOOST_MULTIPLIER = 2
 export const METEOR_CLICK_MULTIPLIER = 10
 export const CLICK_BURST_WINDOW_MS = 10_000
+export const COMBO_WINDOW_MS = 2_000
+export const COMBO_MAX = 100
+export const CRIT_MULTIPLIER = 10
+export const BASE_CRIT_CHANCE = 0.05
+export const UPGRADED_CRIT_CHANCE = 0.1
+export const CHARGE_MAX = 100
+export const DISCHARGE_SECONDS = 60
+export const MILESTONE_THRESHOLDS = [25, 50, 100, 150, 200]
 
 export const costEntries = (cost: Cost): [ResourceId, number][] =>
   Object.entries(cost) as [ResourceId, number][]
@@ -24,6 +32,17 @@ export const costEntries = (cost: Cost): [ResourceId, number][] =>
 export const hasUpgrade = (state: GameState, id: UpgradeId): boolean => state.upgrades.includes(id)
 
 export const costDiscount = (state: GameState): number => (state.artifact === 'oldBlueprint' ? 0.8 : 1)
+
+export const milestoneLevel = (owned: number): number =>
+  MILESTONE_THRESHOLDS.filter((t) => owned >= t).length
+
+export const nextMilestone = (owned: number): number | null =>
+  MILESTONE_THRESHOLDS.find((t) => owned < t) ?? null
+
+const milestoneMultiplier = (owned: number): number => 2 ** milestoneLevel(owned)
+
+export const totalBuildings = (state: GameState): number =>
+  Object.values(state.buildings).reduce((sum, n) => sum + n, 0)
 
 export function costOf(state: GameState, id: BuildingId, owned: number, count: number): Cost {
   const factor =
@@ -120,6 +139,23 @@ export function multipliers(state: GameState): Multipliers {
         m.producer[effect.target] *= effect.multiplier
     }
   }
+  m.producer.drone *= milestoneMultiplier(state.buildings.drone)
+  m.producer.excavator *= milestoneMultiplier(state.buildings.excavator)
+  m.producer.laser *= milestoneMultiplier(state.buildings.laser)
+  for (const id of ['smelter', 'factory', 'neurolab'] as const) {
+    const mult = milestoneMultiplier(state.buildings[id])
+    m.processor[id].input *= mult
+    m.processor[id].output *= mult
+  }
+
+  m.processor.smelter.input *= 1 + 0.01 * state.buildings.excavator
+  m.processor.smelter.output *= 1 + 0.01 * state.buildings.excavator
+  const conveyor = 1 + 0.01 * Math.floor(state.buildings.drone / 5)
+  m.processor.factory.input *= conveyor
+  m.processor.factory.output *= conveyor
+  m.producer.laser *= 1 + 0.05 * state.buildings.neurolab
+  m.click *= 1 + 0.005 * totalBuildings(state)
+
   if (hasUpgrade(state, 'ionwind')) m.producer.drone *= 1 + 0.01 * state.buildings.excavator
   if (hasUpgrade(state, 'tailings')) m.processor.smelter.minEfficiency = Math.max(m.processor.smelter.minEfficiency, 0.25)
   if (hasUpgrade(state, 'dream')) m.processor.neurolab.minEfficiency = Math.max(m.processor.neurolab.minEfficiency, 0.5)
@@ -252,23 +288,69 @@ export function netRates(state: GameState): Resources {
   }
 }
 
-export function applyClick(state: GameState, now = 0): GameState {
+export const critChance = (state: GameState): number =>
+  hasUpgrade(state, 'crit1') ? UPGRADED_CRIT_CHANCE : BASE_CRIT_CHANCE
+
+export const comboActive = (state: GameState, now: number): number =>
+  state.combo > 0 && now - state.lastClickAt <= COMBO_WINDOW_MS ? state.combo : 0
+
+export const comboMultiplier = (combo: number): number =>
+  1 + Math.min(COMBO_MAX, Math.max(0, combo - 1)) / COMBO_MAX
+
+export interface ClickResult {
+  state: GameState
+  gain: number
+  crit: boolean
+  combo: number
+}
+
+export function performClick(state: GameState, now = 0, roll = 1, bonus = 1): ClickResult {
   const m = multipliers(state)
-  const gain = clickValue(state, m) + productionPerSecond(state, m) * m.clickProducerSeconds
+  const combo = Math.min(COMBO_MAX + 1, comboActive(state, now) + 1)
+  const crit = roll < critChance(state)
+  const gain =
+    clickValue(state, m) * comboMultiplier(combo) * (crit ? CRIT_MULTIPLIER : 1) * bonus +
+    productionPerSecond(state, m) * m.clickProducerSeconds
   const ore = state.resources.ore + gain
   const inWindow = now - state.stats.clickBurstStart <= CLICK_BURST_WINDOW_MS
-  return {
+  const next: GameState = {
     ...state,
     resources: { ...state.resources, ore },
+    combo,
+    lastClickAt: now,
+    charge: Math.min(CHARGE_MAX, state.charge + 1),
     stats: {
       ...state.stats,
       clicks: state.stats.clicks + 1,
       runClicks: state.stats.runClicks + 1,
       noClickSeconds: 0,
+      comboBest: Math.max(state.stats.comboBest, combo),
       clickBurstStart: inWindow ? state.stats.clickBurstStart : now,
       clickBurstCount: inWindow ? state.stats.clickBurstCount + 1 : 1,
       totalProduced: { ...state.stats.totalProduced, ore: state.stats.totalProduced.ore + gain },
       peakResources: { ...state.stats.peakResources, ore: Math.max(state.stats.peakResources.ore, ore) },
+    },
+  }
+  return { state: next, gain, crit, combo }
+}
+
+export const applyClick = (state: GameState, now = 0): GameState => performClick(state, now).state
+
+export function applyDischarge(state: GameState): GameState {
+  if (state.charge < CHARGE_MAX) return state
+  const gain = productionPerSecond(state) * DISCHARGE_SECONDS
+  return {
+    ...state,
+    charge: 0,
+    resources: { ...state.resources, ore: state.resources.ore + gain },
+    stats: {
+      ...state.stats,
+      discharges: state.stats.discharges + 1,
+      totalProduced: { ...state.stats.totalProduced, ore: state.stats.totalProduced.ore + gain },
+      peakResources: {
+        ...state.stats.peakResources,
+        ore: Math.max(state.stats.peakResources.ore, state.resources.ore + gain),
+      },
     },
   }
 }
@@ -294,6 +376,44 @@ export function buyUpgrade(state: GameState, id: UpgradeId): GameState | null {
     resources: spend(state.resources, def.cost),
     upgrades: [...state.upgrades, id],
   }
+}
+
+export interface BuildingInfo {
+  kind: 'producer' | 'processor'
+  perUnit: number
+  total: number
+  inputPerUnit: number
+  outputPerUnit: number
+}
+
+export function buildingInfo(state: GameState, id: BuildingId, m: Multipliers = multipliers(state)): BuildingInfo {
+  const def = buildingDef(id)
+  const owned = state.buildings[id]
+  if (def.kind === 'producer') {
+    const perUnit = def.rate * m.producer[def.id] * m.producerAll * m.global
+    return { kind: 'producer', perUnit, total: perUnit * owned, inputPerUnit: 0, outputPerUnit: perUnit }
+  }
+  const rates = processorRates(state, def.id, m)
+  const inputPerUnit = owned > 0 ? rates.input / owned : def.inputRate * m.processor[def.id].input * m.global
+  return {
+    kind: 'processor',
+    perUnit: inputPerUnit * rates.yieldRatio,
+    total: rates.input * rates.yieldRatio,
+    inputPerUnit,
+    outputPerUnit: inputPerUnit * rates.yieldRatio,
+  }
+}
+
+export function secondsUntilAffordable(state: GameState, cost: Cost): number | null {
+  const rates = netRates(state)
+  let worst = 0
+  for (const [res, amount] of costEntries(cost)) {
+    const missing = amount - state.resources[res]
+    if (missing <= 0) continue
+    if (rates[res] <= 0) return null
+    worst = Math.max(worst, missing / rates[res])
+  }
+  return worst > 0 ? worst : 0
 }
 
 export function setProtocol(state: GameState, protocol: GameState['protocol']): GameState {

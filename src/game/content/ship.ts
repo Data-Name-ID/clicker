@@ -19,7 +19,7 @@ export const SHIP_UPGRADES: ShipUpgradeDef[] = [
   { id: 'crewMemory', name: 'Память экипажа', description: 'После перелёта сохраняются первые 10 дронов', cost: 10 },
   { id: 'longRange', name: 'Дальняя связь', description: '«Экстренная поставка» даёт 60 минут вместо 30', cost: 12 },
   { id: 'darkAntenna', name: 'Тёмная антенна', description: 'События происходят в 1,5 раза чаще', cost: 14 },
-  { id: 'darkCompiler', name: 'Тёмный компилятор', description: 'Нейролаборатории: выход ×1,5 при том же входе', cost: 15 },
+  { id: 'darkCompiler', name: 'Тёмный компилятор', description: 'Нейролаборатории дают +50 % ядер без роста расхода чипов', cost: 15 },
   { id: 'doubleHold', name: 'Двойной трюм', description: 'Оффлайн-прогресс приносит ×1,5 ресурсов', cost: 18 },
   { id: 'autoDrill2', name: 'Автобур II', description: 'Автоклик 5 раз/с', cost: 20, requires: 'autoDrill' },
 ]

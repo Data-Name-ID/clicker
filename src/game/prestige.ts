@@ -1,4 +1,5 @@
 import { hasShip } from './content/ship'
+import { activateQuest } from './quests'
 import { hasUpgrade } from './economy'
 import { createInitialState, type GameState } from './types'
 
@@ -27,7 +28,7 @@ export function applyPrestige(state: GameState, gain: number, now = 0): GameStat
   const fresh = createInitialState()
   const under30 =
     now > 0 && state.stats.runStartedAt > 0 && now - state.stats.runStartedAt <= SPEEDRUN_MS
-  return {
+  return activateQuest({
     ...fresh,
     resources: {
       ...fresh.resources,
@@ -55,6 +56,12 @@ export function applyPrestige(state: GameState, gain: number, now = 0): GameStat
       eventsSeen: state.stats.eventsSeen,
       meteorsCaught: state.stats.meteorsCaught,
       protocolSwitches: state.stats.protocolSwitches,
+      offersDeclined: state.stats.offersDeclined,
+      catsCaught: state.stats.catsCaught,
+      discoCount: state.stats.discoCount,
+      comboBest: state.stats.comboBest,
+      discharges: state.stats.discharges,
+      questsCompleted: state.stats.questsCompleted,
       nightOwl: state.stats.nightOwl,
       caughtCat: state.stats.caughtCat,
       discoUsed: state.stats.discoUsed,
@@ -63,7 +70,9 @@ export function applyPrestige(state: GameState, gain: number, now = 0): GameStat
       prestigedUnder30Min: state.stats.prestigedUnder30Min || under30,
     },
     cooldowns: { ...state.cooldowns },
+    theme: state.theme,
+    asteroidSkin: state.asteroidSkin,
     tutorialDismissed: state.tutorialDismissed,
     tutorialSeen: state.tutorialSeen,
-  }
+  }, state.quest.index)
 }

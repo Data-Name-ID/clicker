@@ -89,6 +89,14 @@ export const clearEvent = (state: GameState): GameState => ({
   effects: { ...state.effects, event: null },
 })
 
+export function declineOffer(state: GameState): GameState {
+  const id = state.effects.event?.id
+  const isOffer = id === 'caravan' || id === 'blackMarket'
+  const cleared = clearEvent(state)
+  if (!isOffer) return cleared
+  return { ...cleared, stats: { ...cleared.stats, offersDeclined: cleared.stats.offersDeclined + 1 } }
+}
+
 export function acceptCaravan(state: GameState): GameState {
   if (state.effects.event?.id !== 'caravan') return state
   const given = state.resources.ore / 2
@@ -160,10 +168,12 @@ export const nextCatDelay = (roll: number): number => CAT_DELAY_BASE + roll * CA
 
 export const catchCat = (state: GameState): GameState => ({
   ...state,
-  stats: { ...state.stats, caughtCat: true },
+  stats: { ...state.stats, caughtCat: true, catsCaught: state.stats.catsCaught + 1 },
 })
 
-export const useDisco = (state: GameState): GameState =>
-  state.stats.discoUsed ? state : { ...state, stats: { ...state.stats, discoUsed: true } }
+export const useDisco = (state: GameState): GameState => ({
+  ...state,
+  stats: { ...state.stats, discoUsed: true, discoCount: state.stats.discoCount + 1 },
+})
 
 export const eventName = (id: EventId): string => eventDef(id).name

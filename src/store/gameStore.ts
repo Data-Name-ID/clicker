@@ -6,16 +6,17 @@ import { achievementDef } from '../game/content/achievements'
 import { pickArtifact, rerollArtifact, artifactDef } from '../game/content/artifacts'
 import { eventDef } from '../game/content/events'
 import { buyShipUpgrade, shipUpgradeDef } from '../game/content/ship'
-import { applyClick, buyBuilding, buyUpgrade, setProtocol } from '../game/economy'
+import { applyDischarge, buyBuilding, buyUpgrade, performClick, setProtocol } from '../game/economy'
+import { checkQuests } from '../game/quests'
 import {
   acceptBlackMarket,
   acceptCaravan,
+  declineOffer as declineOfferState,
   addResources,
   catchCat,
   catchComet,
   catchMeteor,
   catchStrayDrone,
-  clearEvent,
   isMeteorShowerActive,
   nextCatDelay,
   nextEventDelay,
@@ -48,6 +49,7 @@ import {
   type ProtocolId,
   type Resources,
   type ShipUpgradeId,
+  type ThemeId,
   type UpgradeId,
 } from '../game/types'
 import { localSaveStorage, type SaveStorage } from './storage'
@@ -72,6 +74,12 @@ export interface OfflineSummary {
   gains: Resources
 }
 
+export interface ClickFeedback {
+  gain: number
+  crit: boolean
+  combo: number
+}
+
 export interface GameStore {
   game: GameState
   now: number
@@ -85,7 +93,9 @@ export interface GameStore {
   catVisible: boolean
   catBoxOpen: boolean
   discoUntil: number
-  click(rhythmBonus?: boolean): void
+  shakeSeq: number
+  click(rhythmBonus?: boolean): ClickFeedback
+  discharge(): void
   buy(id: BuildingId, count: number | 'max'): void
   buyUpgrade(id: UpgradeId): void
   buyShip(id: ShipUpgradeId): void
@@ -111,6 +121,8 @@ export interface GameStore {
   ackTutorial(step: TutorialStepId | null): void
   seeTutorial(step: TutorialStepId): void
   setTab(tab: TabId): void
+  setTheme(theme: ThemeId): void
+  setAsteroidSkin(skin: number | null): void
   start(): void
   notify(kind: ToastKind, title: string, text?: string): void
   dismissToast(id: number): void
@@ -138,8 +150,12 @@ export function createGameStore({
     }
 
     const commit = (game: GameState, extra: Partial<GameStore> = {}) => {
-      const earned = newAchievements(game)
-      set({ game: grantAchievements(game, earned), ...extra })
+      const quests = checkQuests(game)
+      const earned = newAchievements(quests.state)
+      set({ game: grantAchievements(quests.state, earned), ...extra })
+      for (const done of quests.completed) {
+        pushToast('info', `Задание: ${done.name}`, done.rewardText)
+      }
       for (const id of earned) {
         const def = achievementDef(id)
         pushToast('achievement', `Достижение: ${def.name}`, def.description)
@@ -178,11 +194,20 @@ export function createGameStore({
       catVisible: false,
       catBoxOpen: false,
       discoUntil: 0,
+      shakeSeq: 0,
 
       click: (rhythmBonus = false) => {
-        let game = applyClick(get().game, clock())
-        if (rhythmBonus) game = applyClick(game, clock())
-        commit(game)
+        const result = performClick(get().game, clock(), random(), rhythmBonus ? 2 : 1)
+        commit(result.state)
+        return { gain: result.gain, crit: result.crit, combo: result.combo }
+      },
+
+      discharge: () => {
+        const before = get().game
+        const next = applyDischarge(before)
+        if (next === before) return
+        commit(next, { shakeSeq: get().shakeSeq + 1 })
+        pushToast('info', 'РАЗРЯД!', `+${Math.round(next.resources.ore - before.resources.ore)} руды за 60 секунд производства`)
       },
 
       buy: (id, count) => {
@@ -336,7 +361,7 @@ export function createGameStore({
       },
 
       declineOffer: () => {
-        commit(clearEvent(get().game))
+        commit(declineOfferState(get().game))
       },
 
       clickComet: () => {
@@ -419,6 +444,10 @@ export function createGameStore({
       seeTutorial: (step) => set({ game: markTutorialSeen(get().game, step) }),
 
       setTab: (tab) => set({ tab }),
+
+      setTheme: (theme) => set({ game: { ...get().game, theme } }),
+
+      setAsteroidSkin: (skin) => set({ game: { ...get().game, asteroidSkin: skin } }),
 
       start: () => set({ started: true }),
 

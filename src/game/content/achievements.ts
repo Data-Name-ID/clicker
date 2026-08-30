@@ -56,6 +56,12 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'secretHandsFree', name: 'Безрукий режим', description: '10 минут без кликов при открытой игре', secret: true, isEarned: (s) => s.stats.noClickSeconds >= 600 },
   { id: 'secretHoarder', name: 'Плюшкин', description: '100 000 руды на счету', secret: true, isEarned: (s) => s.resources.ore >= 100_000 },
   { id: 'secretSpeedrun', name: 'Спидраннер', description: 'Перелёт быстрее 30 минут', secret: true, isEarned: (s) => s.stats.prestigedUnder30Min },
+  { id: 'quests10', name: 'Исполнительный', description: '10 выполненных заданий', isEarned: (s) => s.stats.questsCompleted >= 10 },
+  { id: 'discharge5', name: 'Громоотвод', description: '5 разрядов реактора', isEarned: (s) => s.stats.discharges >= 5 },
+  { id: 'secretTrader', name: 'Торговец воздухом', description: 'Отклонить 10 предложений', secret: true, isEarned: (s) => s.stats.offersDeclined >= 10 },
+  { id: 'secretCatLover', name: 'Кошатник', description: 'Поймать кота 5 раз', secret: true, isEarned: (s) => s.stats.catsCaught >= 5 },
+  { id: 'secretDj', name: 'Диджей', description: 'Диско 3 раза', secret: true, isEarned: (s) => s.stats.discoCount >= 3 },
+  { id: 'secretCombo', name: 'Комбо-мастер', description: 'Комбо 100', secret: true, isEarned: (s) => s.stats.comboBest >= 100 },
 ]
 
 export const achievementDef = (id: AchievementId): AchievementDef => ACHIEVEMENTS.find((a) => a.id === id)!

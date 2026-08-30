@@ -9,6 +9,7 @@ import {
   catchStrayDrone,
   nextEventDelay,
   openCatBox,
+  declineOffer,
   startRandomEvent,
   tickEvents,
   tickLive,
@@ -176,5 +177,22 @@ describe('startRandomEvent', () => {
     const state = buildState({ effects: { event: { id: 'goldVein', remaining: 5 } } })
 
     expect(startRandomEvent(state, [0, 0.5]).started).toBeNull()
+  })
+})
+
+describe('declineOffer', () => {
+  it('counts declined offers', () => {
+    const state = buildState({ effects: { event: { id: 'caravan', remaining: 5 } } })
+
+    const next = declineOffer(state)
+
+    expect(next.effects.event).toBeNull()
+    expect(next.stats.offersDeclined).toBe(1)
+  })
+
+  it('does not count a non-offer event', () => {
+    const state = buildState({ effects: { event: { id: 'goldVein', remaining: 5 } } })
+
+    expect(declineOffer(state).stats.offersDeclined).toBe(0)
   })
 })

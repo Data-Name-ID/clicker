@@ -7,6 +7,9 @@ import asteroid3 from './sprites/asteroid-3.png'
 import asteroid4 from './sprites/asteroid-4.png'
 import asteroid5 from './sprites/asteroid-5.png'
 import cat from './sprites/cat.png'
+import cracks1 from './sprites/cracks-1.png'
+import cracks2 from './sprites/cracks-2.png'
+import cracks3 from './sprites/cracks-3.png'
 import comet from './sprites/comet.png'
 import buildingDrone from './sprites/building-drone.png'
 import buildingExcavator from './sprites/building-excavator.png'
@@ -31,6 +34,8 @@ import tabSettings from './sprites/tab-settings.png'
 import tabSettingsOn from './sprites/tab-settings-on.png'
 import tabUpgrades from './sprites/tab-upgrades.png'
 import tabUpgradesOn from './sprites/tab-upgrades-on.png'
+
+export const CRACKS: string[] = [cracks1, cracks2, cracks3]
 
 export const ASTEROIDS: string[] = [asteroid0, asteroid1, asteroid2, asteroid3, asteroid4, asteroid5]
 

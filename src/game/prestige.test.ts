@@ -115,3 +115,14 @@ describe('prestige flags', () => {
     expect(applyPrestige(buildState({ stats: { runChips: 10_000, runStartedAt: NOW - 40 * 60 * 1000 } }), 3, NOW).stats.prestigedUnder30Min).toBe(false)
   })
 })
+
+describe('customization after prestige', () => {
+  it('keeps the theme and asteroid skin', () => {
+    const state = buildState({ stats: { runChips: 10_000 }, theme: 'nebula', asteroidSkin: 2 })
+
+    const after = applyPrestige(state, 3)
+
+    expect(after.theme).toBe('nebula')
+    expect(after.asteroidSkin).toBe(2)
+  })
+})

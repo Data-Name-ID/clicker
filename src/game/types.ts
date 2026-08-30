@@ -35,6 +35,7 @@ export type UpgradeId =
   | 'tailings'
   | 'sling'
   | 'resonance'
+  | 'crit1'
 
 export type AchievementId =
   | 'clicks100'
@@ -81,6 +82,12 @@ export type AchievementId =
   | 'secretHandsFree'
   | 'secretHoarder'
   | 'secretSpeedrun'
+  | 'secretTrader'
+  | 'secretCatLover'
+  | 'secretDj'
+  | 'secretCombo'
+  | 'quests10'
+  | 'discharge5'
 
 export type EventId =
   | 'goldVein'
@@ -125,6 +132,8 @@ export type ShipUpgradeId =
 
 export type ProtocolId = 'balance' | 'mining' | 'factory'
 
+export type ThemeId = 'classic' | 'void' | 'nebula' | 'terminal'
+
 export type Cost = Partial<Record<ResourceId, number>>
 export type Resources = Record<ResourceId, number>
 
@@ -150,6 +159,12 @@ export interface GameStats {
   nightOwl: boolean
   caughtCat: boolean
   discoUsed: boolean
+  offersDeclined: number
+  catsCaught: number
+  discoCount: number
+  comboBest: number
+  discharges: number
+  questsCompleted: number
 }
 
 export interface ActiveEvent {
@@ -177,8 +192,14 @@ export interface Efficiency {
   neurolab: number
 }
 
+export interface QuestState {
+  index: number
+  baseline: number
+  goal: number
+}
+
 export interface GameState {
-  version: 2
+  version: 3
   resources: Resources
   darkMatter: number
   buildings: Record<BuildingId, number>
@@ -195,6 +216,12 @@ export interface GameState {
   shipUpgrades: ShipUpgradeId[]
   eventCountdown: number
   catCountdown: number
+  combo: number
+  lastClickAt: number
+  charge: number
+  quest: QuestState
+  theme: ThemeId
+  asteroidSkin: number | null
   tutorialDismissed: boolean
   tutorialSeen: TutorialStepId[]
   savedAt: number
@@ -204,7 +231,7 @@ export const zeroResources = (): Resources => ({ ore: 0, alloy: 0, chip: 0, core
 
 export function createInitialState(): GameState {
   return {
-    version: 2,
+    version: 3,
     resources: zeroResources(),
     darkMatter: 0,
     buildings: { drone: 0, excavator: 0, smelter: 0, factory: 0, laser: 0, neurolab: 0 },
@@ -233,6 +260,12 @@ export function createInitialState(): GameState {
       nightOwl: false,
       caughtCat: false,
       discoUsed: false,
+      offersDeclined: 0,
+      catsCaught: 0,
+      discoCount: 0,
+      comboBest: 0,
+      discharges: 0,
+      questsCompleted: 0,
     },
     effects: { boostRemaining: 0, meteorRemaining: 0, event: null },
     cooldowns: { boostUntil: 0, supplyUntil: 0, meteorUntil: 0, rerollUntil: 0, eventRushUntil: 0 },
@@ -243,6 +276,12 @@ export function createInitialState(): GameState {
     shipUpgrades: [],
     eventCountdown: 0,
     catCountdown: 0,
+    combo: 0,
+    lastClickAt: 0,
+    charge: 0,
+    quest: { index: 0, baseline: 0, goal: 0 },
+    theme: 'classic',
+    asteroidSkin: null,
     tutorialDismissed: false,
     tutorialSeen: [],
     savedAt: 0,

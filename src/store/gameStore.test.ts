@@ -235,3 +235,27 @@ describe('gameStore new ad placements', () => {
     expect(store.getState().catBoxOpen).toBe(false)
   })
 })
+
+describe('gameStore customization', () => {
+  it('saves the theme and skin in the game state', () => {
+    const store = makeStore()
+
+    store.getState().setTheme('nebula')
+    store.getState().setAsteroidSkin(2)
+
+    expect(store.getState().game.theme).toBe('nebula')
+    expect(store.getState().game.asteroidSkin).toBe(2)
+  })
+})
+
+describe('gameStore discharge', () => {
+  it('shakes the screen and pays out', () => {
+    const store = makeStore({ buildings: { drone: 10 }, charge: 100 })
+
+    store.getState().discharge()
+
+    expect(store.getState().game.resources.ore).toBe(300)
+    expect(store.getState().shakeSeq).toBe(1)
+    expect(store.getState().toasts.map((t) => t.title)).toContain('РАЗРЯД!')
+  })
+})

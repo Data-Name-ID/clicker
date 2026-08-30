@@ -10,7 +10,8 @@
 | `meteor.png` | 16×16 | плейсхолдер | `scripts/placeholders.mjs` | CC0 |
 | `building-drone.png`, `building-excavator.png`, `building-smelter.png`, `building-factory.png`, `building-laser.png`, `building-neurolab.png` | 32×32 | плейсхолдер | `scripts/placeholders.mjs` | CC0 |
 | `res-ore.png`, `res-alloy.png`, `res-chip.png`, `res-core.png`, `res-darkmatter.png` | 16×16 | плейсхолдер | `scripts/placeholders.mjs` | CC0 |
-| `ad-mark.png`, `cat.png`, `comet.png` | 16×16 | плейсхолдер | `scripts/placeholders.mjs` | CC0 |
+| `ad-mark.png`, `cat.png`, `comet.png` | 16×16 |
+| `cracks-1.png`, `cracks-2.png`, `cracks-3.png` | 96×96 | плейсхолдер | `scripts/placeholders.mjs` | CC0 | плейсхолдер | `scripts/placeholders.mjs` | CC0 |
 | `tab-*.png`, `tab-*-on.png` (buildings, upgrades, achievements, prestige, settings) | 16×16 | плейсхолдер | `scripts/placeholders.mjs` | CC0 |
 
 Фон `bg-stars` и рамка `frame` сделаны чистым CSS (`src/ui/styles.css`), файлов нет.

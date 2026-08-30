@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildState } from '../../test/builders'
-import { applyClick, canAfford, clickValue, costOf, isBuildingVisible, maxAffordable, netRates, productionPerSecond, processorRates, setProtocol } from './economy'
+import { applyClick, applyDischarge, buildingInfo, canAfford, clickValue, costOf, isBuildingVisible, maxAffordable, netRates, productionPerSecond, performClick, processorRates, secondsUntilAffordable, setProtocol } from './economy'
 
 describe('costOf', () => {
   it('prices 10 drones with none owned', () => {
@@ -129,7 +129,7 @@ describe('applyClick extras', () => {
   it('resonance adds one second of producer output per click', () => {
     const next = applyClick(buildState({ upgrades: ['resonance'], buildings: { drone: 10 } }), 0)
 
-    expect(next.resources.ore).toBe(6)
+    expect(next.resources.ore).toBeCloseTo(6.05, 10)
   })
 
   it('tracks the click burst window', () => {
@@ -140,5 +140,108 @@ describe('applyClick extras', () => {
     expect(second.stats.clickBurstCount).toBe(2)
     expect(third.stats.clickBurstCount).toBe(1)
     expect(third.stats.clickBurstStart).toBe(20_000)
+  })
+})
+
+describe('milestones', () => {
+  it('doubles a building at 25 owned', () => {
+    expect(productionPerSecond(buildState({ buildings: { drone: 25 } }))).toBe(25)
+  })
+
+  it('stacks at 50 owned', () => {
+    expect(productionPerSecond(buildState({ buildings: { drone: 50 } }))).toBe(100)
+  })
+})
+
+describe('synergies', () => {
+  it('excavators speed up smelters', () => {
+    const state = buildState({ buildings: { smelter: 1, excavator: 10 } })
+
+    expect(processorRates(state, 'smelter').input).toBeCloseTo(2.2, 10)
+  })
+
+  it('every building adds click power', () => {
+    expect(clickValue(buildState({ buildings: { drone: 10 } }))).toBeCloseTo(1.05, 10)
+  })
+})
+
+describe('combo and crits', () => {
+  it('grows the combo inside the 2 second window', () => {
+    const first = performClick(buildState(), 1000, 1)
+    const second = performClick(first.state, 2500, 1)
+
+    expect(second.combo).toBe(2)
+    expect(second.gain).toBeCloseTo(1.01, 10)
+  })
+
+  it('resets the combo after a pause', () => {
+    const first = performClick(buildState(), 1000, 1)
+    const late = performClick(first.state, 4000, 1)
+
+    expect(late.combo).toBe(1)
+    expect(late.gain).toBe(1)
+  })
+
+  it('crits multiply the click by 10', () => {
+    const result = performClick(buildState(), 0, 0.01)
+
+    expect(result.crit).toBe(true)
+    expect(result.gain).toBe(10)
+  })
+
+  it('the upgrade doubles the crit chance', () => {
+    expect(performClick(buildState({ upgrades: ['crit1'] }), 0, 0.07).crit).toBe(true)
+    expect(performClick(buildState(), 0, 0.07).crit).toBe(false)
+  })
+})
+
+describe('discharge', () => {
+  it('needs a full charge', () => {
+    const state = buildState({ buildings: { drone: 10 }, charge: 99 })
+
+    expect(applyDischarge(state)).toBe(state)
+  })
+
+  it('converts the charge into 60 seconds of production', () => {
+    const state = buildState({ buildings: { drone: 10 }, charge: 100 })
+
+    const next = applyDischarge(state)
+
+    expect(next.resources.ore).toBe(300)
+    expect(next.charge).toBe(0)
+    expect(next.stats.discharges).toBe(1)
+  })
+})
+
+describe('buildingInfo', () => {
+  it('reports producer output with multipliers', () => {
+    const info = buildingInfo(buildState({ buildings: { drone: 10 }, upgrades: ['drone1'] }), 'drone')
+
+    expect(info.perUnit).toBe(1)
+    expect(info.total).toBe(10)
+  })
+
+  it('reports processor input and output per unit', () => {
+    const info = buildingInfo(buildState({ buildings: { smelter: 4 } }), 'smelter')
+
+    expect(info.inputPerUnit).toBe(2)
+    expect(info.outputPerUnit).toBe(1)
+    expect(info.total).toBe(4)
+  })
+})
+
+describe('secondsUntilAffordable', () => {
+  it('estimates the wait from net rates', () => {
+    const state = buildState({ buildings: { drone: 10 }, resources: { ore: 5 } })
+
+    expect(secondsUntilAffordable(state, { ore: 15 })).toBe(2)
+  })
+
+  it('returns null when the rate is zero', () => {
+    expect(secondsUntilAffordable(buildState(), { ore: 15 })).toBeNull()
+  })
+
+  it('returns 0 when already affordable', () => {
+    expect(secondsUntilAffordable(buildState({ resources: { ore: 20 } }), { ore: 15 })).toBe(0)
   })
 })

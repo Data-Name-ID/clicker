@@ -14,13 +14,14 @@ import {
   type GameState,
   type ProtocolId,
   type Resources,
+  type ThemeId,
   type ShipUpgradeId,
   type TutorialStepId,
   type UpgradeId,
 } from './types'
 
 export const SAVE_KEY = 'asteroid7:save'
-export const SAVE_VERSION = 2
+export const SAVE_VERSION = 3
 export const OFFLINE_MIN_SECONDS = 60
 export const OFFLINE_CAP_SECONDS = 8 * 60 * 60
 export const OFFLINE_CAP_EXTENDED_SECONDS = 24 * 60 * 60
@@ -31,6 +32,7 @@ type Raw = Record<string, unknown>
 
 const migrations: Record<number, (raw: Raw) => Raw> = {
   1: (raw) => raw,
+  2: (raw) => raw,
 }
 
 export class SaveError extends Error {}
@@ -67,6 +69,7 @@ const ARTIFACT_IDS: ArtifactId[] = ARTIFACTS.map((a) => a.id)
 const SHIP_IDS: ShipUpgradeId[] = SHIP_UPGRADES.map((u) => u.id)
 const EVENT_IDS: EventId[] = EVENTS.map((e) => e.id)
 const PROTOCOLS: ProtocolId[] = ['balance', 'mining', 'factory']
+const THEMES: ThemeId[] = ['classic', 'void', 'nebula', 'terminal']
 
 function normalize(raw: Raw): GameState {
   const base = createInitialState()
@@ -107,6 +110,12 @@ function normalize(raw: Raw): GameState {
       nightOwl: bool(stats.nightOwl),
       caughtCat: bool(stats.caughtCat),
       discoUsed: bool(stats.discoUsed),
+      offersDeclined: num(stats.offersDeclined, 0),
+      catsCaught: num(stats.catsCaught, bool(stats.caughtCat) ? 1 : 0),
+      discoCount: num(stats.discoCount, bool(stats.discoUsed) ? 1 : 0),
+      comboBest: num(stats.comboBest, 0),
+      discharges: num(stats.discharges, 0),
+      questsCompleted: num(stats.questsCompleted, 0),
     },
     effects: {
       boostRemaining: Math.max(0, num(effects.boostRemaining, 0)),
@@ -131,9 +140,27 @@ function normalize(raw: Raw): GameState {
     shipUpgrades: ids(raw.shipUpgrades, SHIP_IDS),
     eventCountdown: Math.max(0, num(raw.eventCountdown, 0)),
     catCountdown: Math.max(0, num(raw.catCountdown, 0)),
+    combo: Math.max(0, num(raw.combo, 0)),
+    lastClickAt: num(raw.lastClickAt, 0),
+    charge: Math.min(100, Math.max(0, num(raw.charge, 0))),
+    quest: normalizeQuest(raw.quest),
+    theme: THEMES.includes(raw.theme as ThemeId) ? (raw.theme as ThemeId) : 'classic',
+    asteroidSkin:
+      typeof raw.asteroidSkin === 'number' && Number.isInteger(raw.asteroidSkin) && raw.asteroidSkin >= 0
+        ? raw.asteroidSkin
+        : null,
     tutorialDismissed: raw.tutorialDismissed === true,
     tutorialSeen: ids(raw.tutorialSeen, TUTORIAL_STEP_IDS),
     savedAt: num(raw.savedAt, 0),
+  }
+}
+
+function normalizeQuest(v: unknown): GameState['quest'] {
+  const q = record(v)
+  return {
+    index: Math.max(0, Math.floor(num(q.index, 0))),
+    baseline: num(q.baseline, 0),
+    goal: Math.max(0, num(q.goal, 0)),
   }
 }
 

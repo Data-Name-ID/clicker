@@ -416,8 +416,16 @@ b {
   opacity: 1;
 }
 
+.btn--ad {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .btn__ad-mark {
-  color: var(--darkMatter);
+  flex: none;
+  width: 16px;
+  height: 16px;
 }
 
 .ad-action {

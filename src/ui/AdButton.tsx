@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react'
 import type { AdPlacement } from '../ads/AdProvider'
 import { adProvider } from '../ads'
+import { SPRITES } from '../assets/sprites'
 import { formatDuration } from '../game/format'
 import { cooldownRemaining } from '../game/rewards'
 import { useGame } from '../store/context'
@@ -79,7 +80,8 @@ export function AdButton({ placement, label, activeLabel, activeRemaining = 0, d
         onBlur={() => setHover(false)}
         aria-describedby={open ? tipId : undefined}
       >
-        <span className="btn__ad-mark" aria-hidden="true">▶</span> {caption}
+        <img className="pixel btn__ad-mark" src={SPRITES['ad-mark']} alt="" width={16} height={16} />
+        <span>{caption}</span>
       </button>
       <button
         type="button"

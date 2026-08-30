@@ -1,4 +1,5 @@
 import type { BuildingId, ResourceId } from '../game/types'
+import adMark from './sprites/ad-mark.png'
 import asteroid0 from './sprites/asteroid-0.png'
 import asteroid1 from './sprites/asteroid-1.png'
 import asteroid2 from './sprites/asteroid-2.png'
@@ -29,6 +30,7 @@ export const ASTEROIDS: string[] = [asteroid0, asteroid1, asteroid2]
 export const SPRITES = {
   shard,
   meteor,
+  'ad-mark': adMark,
   'building-drone': buildingDrone,
   'building-excavator': buildingExcavator,
   'building-smelter': buildingSmelter,

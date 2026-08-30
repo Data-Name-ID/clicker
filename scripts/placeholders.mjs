@@ -358,15 +358,38 @@ const TAB_ICONS = {
   ],
 }
 
-function bitmap(name, rows, color) {
+function bitmap(name, rows, color, palette = {}) {
   const c = new Canvas(16, 16)
   rows.forEach((row, y) => {
     for (let x = 0; x < row.length; x += 1) {
-      if (row[x] === '#') c.set(x, y, [...color, 255])
+      const ch = row[x]
+      if (ch === '#') c.set(x, y, [...color, 255])
+      else if (palette[ch]) c.set(x, y, [...palette[ch], 255])
     }
   })
   c.save(name)
 }
+
+const AD_MARK = [
+  '....#......#....',
+  '.....#....#.....',
+  '......#..#......',
+  '.......##.......',
+  '..############..',
+  '..#oooooooooo#..',
+  '..#oooooooooo#..',
+  '..#oooooooooo#..',
+  '..#oooooooooo#..',
+  '..#oooooooooo#..',
+  '..#oooooooooo#..',
+  '..#oooooooooo#..',
+  '..############..',
+  '.....#....#.....',
+  '................',
+  '................',
+]
+
+bitmap('ad-mark', AD_MARK, [217, 199, 255], { o: DARK })
 
 for (const [id, rows] of Object.entries(TAB_ICONS)) {
   bitmap(`tab-${id}`, rows, MUTED)

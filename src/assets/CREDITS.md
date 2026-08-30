@@ -10,6 +10,7 @@
 | `meteor.png` | 16×16 | плейсхолдер | `scripts/placeholders.mjs` | CC0 |
 | `building-drone.png`, `building-excavator.png`, `building-smelter.png`, `building-factory.png`, `building-laser.png` | 32×32 | плейсхолдер | `scripts/placeholders.mjs` | CC0 |
 | `res-ore.png`, `res-alloy.png`, `res-chip.png`, `res-darkmatter.png` | 16×16 | плейсхолдер | `scripts/placeholders.mjs` | CC0 |
+| `ad-mark.png` | 16×16 | плейсхолдер | `scripts/placeholders.mjs` | CC0 |
 | `tab-*.png`, `tab-*-on.png` (buildings, upgrades, achievements, prestige, settings) | 16×16 | плейсхолдер | `scripts/placeholders.mjs` | CC0 |
 
 Фон `bg-stars` и рамка `frame` сделаны чистым CSS (`src/ui/styles.css`), файлов нет.
@@ -25,3 +26,4 @@
 - [ ] `building-drone`, `building-excavator`, `building-smelter`, `building-factory`, `building-laser` — 32×32
 - [ ] `res-ore`, `res-alloy`, `res-chip`, `res-darkmatter` — 16×16
 - [ ] `tab-*` / `tab-*-on` — 16×16, иконки нижней панели
+- [ ] `ad-mark` — 16×16, значок рекламы на кнопках

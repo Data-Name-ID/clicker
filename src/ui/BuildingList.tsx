@@ -28,7 +28,7 @@ export function BuildingList() {
             </button>
           ))}
         </div>
-        <AdButton placement="supply" label="Экстренная поставка" hint="Ресурсы за 30 минут текущего производства" />
+        <AdButton placement="supply" label="Экстренная поставка" />
       </div>
       {visible.length === 0 && <p className="empty">Кликайте по астероиду — здания появятся, когда накопится руда.</p>}
       {visible.map((id) => (

@@ -26,6 +26,7 @@ export function applyPrestige(state: GameState, gain: number): GameState {
     },
     cooldowns: { ...state.cooldowns },
     tutorialDismissed: state.tutorialDismissed,
+    tutorialSeen: state.tutorialSeen,
     savedAt: state.savedAt,
   }
 }

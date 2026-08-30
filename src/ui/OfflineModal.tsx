@@ -26,7 +26,7 @@ export function OfflineModal() {
           <button type="button" className="btn" onClick={close}>
             Забрать
           </button>
-          <AdButton placement="offlineDouble" label="Забрать ×2" hint="Прирост за оффлайн начислится ещё раз" />
+          <AdButton placement="offlineDouble" label="Забрать ×2" />
         </div>
       </div>
     </div>

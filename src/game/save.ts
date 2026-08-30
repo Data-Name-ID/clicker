@@ -7,6 +7,7 @@ import {
   type AchievementId,
   type GameState,
   type Resources,
+  type TutorialStepId,
   type UpgradeId,
 } from './types'
 
@@ -42,6 +43,7 @@ function ids<T extends string>(v: unknown, known: readonly T[]): T[] {
 
 const UPGRADE_IDS: UpgradeId[] = UPGRADES.map((u) => u.id)
 const ACHIEVEMENT_IDS: AchievementId[] = ACHIEVEMENTS.map((a) => a.id)
+const TUTORIAL_STEP_IDS: TutorialStepId[] = ['click', 'drone', 'ads', 'smelter', 'ore', 'factory', 'prestige']
 
 function normalize(raw: Raw): GameState {
   const base = createInitialState()
@@ -82,6 +84,7 @@ function normalize(raw: Raw): GameState {
       factory: num(efficiency.factory, 1),
     },
     tutorialDismissed: raw.tutorialDismissed === true,
+    tutorialSeen: ids(raw.tutorialSeen, TUTORIAL_STEP_IDS),
     savedAt: num(raw.savedAt, 0),
   }
 }

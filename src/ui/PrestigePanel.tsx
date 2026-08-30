@@ -36,7 +36,7 @@ export function PrestigePanel() {
         <button type="button" className="btn btn--primary" disabled={!ready} onClick={prestige}>
           Перелёт (+{gain})
         </button>
-        <AdButton placement="prestigeBonus" label={`Перелёт с бонусом (+${bonusGain})`} disabled={!ready} hint="Тёмной материи ×1,5" />
+        <AdButton placement="prestigeBonus" label={`Перелёт с бонусом (+${bonusGain})`} disabled={!ready} />
       </div>
     </div>
   )

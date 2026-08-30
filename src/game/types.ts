@@ -1,4 +1,6 @@
 export type ResourceId = 'ore' | 'alloy' | 'chip'
+
+export type TutorialStepId = 'click' | 'drone' | 'ads' | 'smelter' | 'ore' | 'factory' | 'prestige'
 export type BuildingId = 'drone' | 'excavator' | 'smelter' | 'factory' | 'laser'
 export type ProducerId = 'drone' | 'excavator' | 'laser'
 export type ProcessorId = 'smelter' | 'factory'
@@ -85,6 +87,7 @@ export interface GameState {
   cooldowns: Cooldowns
   efficiency: Efficiency
   tutorialDismissed: boolean
+  tutorialSeen: TutorialStepId[]
   savedAt: number
 }
 
@@ -111,6 +114,7 @@ export function createInitialState(): GameState {
     cooldowns: { boostUntil: 0, supplyUntil: 0, meteorUntil: 0 },
     efficiency: { smelter: 1, factory: 1 },
     tutorialDismissed: false,
+    tutorialSeen: [],
     savedAt: 0,
   }
 }

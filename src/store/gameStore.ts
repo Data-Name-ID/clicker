@@ -15,7 +15,7 @@ import {
 } from '../game/rewards'
 import { SaveError, applyOffline, decodeImport, deserialize, encodeExport, serialize } from '../game/save'
 import { simulateChunked } from '../game/tick'
-import { dismissTutorial, type TutorialStepId } from '../game/tutorial'
+import { dismissTutorial, markTutorialSeen, type TutorialStepId } from '../game/tutorial'
 import { createInitialState, type BuildingId, type GameState, type Resources, type UpgradeId } from '../game/types'
 import { localSaveStorage, type SaveStorage } from './storage'
 
@@ -62,6 +62,7 @@ export interface GameStore {
   closeOffline(): void
   dismissTutorial(): void
   ackTutorial(step: TutorialStepId | null): void
+  seeTutorial(step: TutorialStepId): void
   setTab(tab: TabId): void
   start(): void
   notify(kind: ToastKind, title: string, text?: string): void
@@ -232,6 +233,8 @@ export function createGameStore({
       dismissTutorial: () => set({ game: dismissTutorial(get().game) }),
 
       ackTutorial: (step) => set({ tourAck: step }),
+
+      seeTutorial: (step) => set({ game: markTutorialSeen(get().game, step) }),
 
       setTab: (tab) => set({ tab }),
 

@@ -80,20 +80,18 @@ export function Asteroid() {
         ))}
       </div>
       <p className="asteroid__hint">Клик: +{formatNumber(value)} руды</p>
-      <div className="asteroid-actions">
+      <div className="asteroid-actions" data-tour="ad-buttons">
         <AdButton
           placement="boost"
           label="Перегрузка реактора"
           activeLabel="Перегрузка"
           activeRemaining={boostRemaining}
-          hint="Всё производство ×2 на 10 минут"
         />
         <AdButton
           placement="meteorShower"
           label="Метеоритный дождь"
           activeLabel="Дождь"
           activeRemaining={meteorRemaining}
-          hint="Клик ×10 на 30 секунд"
         />
       </div>
     </section>

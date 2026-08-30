@@ -11,7 +11,9 @@ interface StepTarget {
 const TARGETS: Record<TutorialStepId, StepTarget> = {
   click: { tab: 'buildings', selectors: ['[data-tour="asteroid"]'] },
   drone: { tab: 'buildings', selectors: ['[data-tour="building-drone"]', '[data-tour="buildings"]'] },
+  ads: { tab: 'buildings', selectors: ['[data-tour="ad-buttons"]'] },
   smelter: { tab: 'buildings', selectors: ['[data-tour="building-smelter"]', '[data-tour="resource-ore"]'] },
+  ore: { tab: 'buildings', selectors: ['[data-tour="building-smelter"]'] },
   factory: { tab: 'buildings', selectors: ['[data-tour="building-factory"]', '[data-tour="resource-alloy"]'] },
   prestige: { tab: 'buildings', selectors: ['[data-tour="tab-prestige"]'] },
 }
@@ -69,6 +71,7 @@ export function Tutorial() {
   const acked = useGame((s) => s.tourAck)
   const ack = useGame((s) => s.ackTutorial)
   const dismiss = useGame((s) => s.dismissTutorial)
+  const see = useGame((s) => s.seeTutorial)
   const setTab = useGame((s) => s.setTab)
   const stepId = step?.id ?? null
   const target = stepId ? TARGETS[stepId] : null
@@ -86,6 +89,7 @@ export function Tutorial() {
 
   if (!step) return null
   const last = isLastTutorialStep(step)
+  const info = step.kind === 'info'
 
   if (!modal) {
     return (
@@ -107,7 +111,7 @@ export function Tutorial() {
   const vh = typeof window === 'undefined' ? 0 : window.innerHeight
   const below = box ? box.top + box.height + 12 : 0
   const placeBelow = !box || below + MESSAGE_HEIGHT < vh
-  const messageStyle = box
+  const messageStyle: React.CSSProperties = box
     ? placeBelow
       ? { top: below }
       : { bottom: vh - box.top + 12 }
@@ -139,9 +143,15 @@ export function Tutorial() {
             </button>
           ) : (
             <>
-              <button type="button" className="btn btn--primary" onClick={() => ack(step.id)}>
-                Далее
-              </button>
+              {info ? (
+                <button type="button" className="btn btn--primary" onClick={() => see(step.id)}>
+                  Понятно
+                </button>
+              ) : (
+                <button type="button" className="btn btn--primary" onClick={() => ack(step.id)}>
+                  Далее
+                </button>
+              )}
               <button type="button" className="btn" onClick={dismiss}>
                 Пропустить обучение
               </button>

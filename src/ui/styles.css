@@ -12,6 +12,17 @@
   --darkMatter: #c05af0;
   --danger: #f05a5a;
   --font: 'Press Start 2P', 'Courier New', monospace;
+  --stars:
+    radial-gradient(2px 2px at 20px 30px, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 90px 120px, #9fb4ff 50%, transparent 51%),
+    radial-gradient(2px 2px at 160px 60px, #d0d6ff 50%, transparent 51%),
+    radial-gradient(3px 3px at 200px 200px, #ffd9a0 50%, transparent 51%),
+    radial-gradient(2px 2px at 50px 220px, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 230px 140px, #fff 50%, transparent 51%),
+    radial-gradient(2px 2px at 120px 180px, #b0f0ff 50%, transparent 51%),
+    radial-gradient(1px 1px at 70px 70px, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 180px 240px, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 240px 20px, #fff 50%, transparent 51%);
 }
 
 * {
@@ -30,17 +41,7 @@ body {
   line-height: 1.6;
   color: var(--text);
   background-color: var(--bg);
-  background-image:
-    radial-gradient(2px 2px at 20px 30px, #fff 50%, transparent 51%),
-    radial-gradient(2px 2px at 90px 120px, #9fb4ff 50%, transparent 51%),
-    radial-gradient(2px 2px at 160px 60px, #d0d6ff 50%, transparent 51%),
-    radial-gradient(3px 3px at 200px 200px, #ffd9a0 50%, transparent 51%),
-    radial-gradient(2px 2px at 50px 220px, #fff 50%, transparent 51%),
-    radial-gradient(2px 2px at 230px 140px, #fff 50%, transparent 51%),
-    radial-gradient(2px 2px at 120px 180px, #b0f0ff 50%, transparent 51%),
-    radial-gradient(1px 1px at 70px 70px, #fff 50%, transparent 51%),
-    radial-gradient(1px 1px at 180px 240px, #fff 50%, transparent 51%),
-    radial-gradient(1px 1px at 240px 20px, #fff 50%, transparent 51%);
+  background-image: var(--stars);
   background-size: 256px 256px;
   -webkit-font-smoothing: none;
 }
@@ -361,7 +362,7 @@ b {
   width: 100%;
 }
 
-.asteroid-actions .btn {
+.asteroid-actions .btn--ad {
   font-size: 9px;
   padding: 8px 6px;
 }
@@ -417,6 +418,63 @@ b {
 
 .btn__ad-mark {
   color: var(--darkMatter);
+}
+
+.ad-action {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ad-action .btn--ad {
+  flex: 1;
+  min-width: 0;
+}
+
+.ad-action__info {
+  flex: none;
+  width: 30px;
+  background: var(--panel-2);
+  border: 3px solid #b48cff;
+  box-shadow: inset -3px -3px 0 var(--border), 3px 3px 0 var(--bg);
+  color: #d9c7ff;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ad-action__info:hover,
+.ad-action__info--on {
+  background: #3a1d5c;
+  color: #fff;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  font-size: 8px;
+  line-height: 1.7;
+  border-color: #b48cff;
+  pointer-events: none;
+}
+
+.tooltip__title {
+  color: var(--darkMatter);
+  font-size: 9px;
+}
+
+.tooltip__muted {
+  color: var(--muted);
+}
+
+.tooltip__cooldown {
+  color: var(--ore);
 }
 
 .btn--seg {
@@ -845,7 +903,7 @@ b {
     grid-template-columns: 1fr;
   }
 
-  .asteroid-actions .btn {
+  .asteroid-actions .btn--ad {
     font-size: 10px;
     padding: 10px;
   }
@@ -960,7 +1018,9 @@ b {
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(11, 13, 26, 0.85);
+  background-color: var(--bg);
+  background-image: var(--stars);
+  background-size: 256px 256px;
 }
 
 .start__card {
@@ -1021,5 +1081,11 @@ b {
 @media (max-width: 420px) {
   .start__title {
     font-size: 16px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ad-action__info {
+    display: none;
   }
 }

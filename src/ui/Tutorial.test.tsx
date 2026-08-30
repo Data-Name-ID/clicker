@@ -57,8 +57,28 @@ describe('Tutorial', () => {
     expect(store.getState().game.tutorialDismissed).toBe(true)
   })
 
+  it('explains ads after the first drone and moves on after "Понятно"', () => {
+    const { store } = renderWithStore(<Tutorial />, { stats: { clicks: 10 }, buildings: { drone: 1 } })
+    expect(screen.getByRole('dialog', { name: 'Обучение' })).toHaveTextContent('Реклама = бонусы')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Понятно' }))
+
+    expect(screen.getByRole('dialog', { name: 'Обучение' })).toHaveTextContent('Плавильня')
+    expect(store.getState().game.tutorialSeen).toEqual(['ads'])
+  })
+
+  it('explains ore consumption after the first smelter', () => {
+    renderWithStore(<Tutorial />, { stats: { clicks: 10 }, buildings: { drone: 1, smelter: 1 }, tutorialSeen: ['ads'] })
+
+    expect(screen.getByRole('dialog', { name: 'Обучение' })).toHaveTextContent('Расход руды')
+  })
+
   it('offers to finish on the last step', () => {
-    renderWithStore(<Tutorial />, { stats: { clicks: 10 }, buildings: { drone: 1, smelter: 1, factory: 1 } })
+    renderWithStore(<Tutorial />, {
+      stats: { clicks: 10 },
+      buildings: { drone: 1, smelter: 1, factory: 1 },
+      tutorialSeen: ['ads', 'ore'],
+    })
 
     fireEvent.click(screen.getByRole('button', { name: 'Понятно' }))
 

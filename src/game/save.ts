@@ -5,6 +5,7 @@ import { simulateChunked } from './tick'
 import { ARTIFACTS } from './content/artifacts'
 import { CHALLENGES } from './content/challenges'
 import { EXPEDITION_KINDS, EXPEDITION_PARTY_SIZES } from './content/expeditions'
+import { SKILLS } from './content/skills'
 import { TALENTS } from './content/talents'
 import { EVENTS } from './content/events'
 import { SHIP_UPGRADES } from './content/ship'
@@ -20,6 +21,7 @@ import {
   type ExpeditionKind,
   type ProtocolId,
   type Resources,
+  type SkillId,
   type TalentId,
   type ThemeId,
   type ShipUpgradeId,
@@ -28,7 +30,7 @@ import {
 } from './types'
 
 export const SAVE_KEY = 'asteroid7:save'
-export const SAVE_VERSION = 4
+export const SAVE_VERSION = 5
 export const OFFLINE_MIN_SECONDS = 60
 export const OFFLINE_CAP_SECONDS = 8 * 60 * 60
 export const OFFLINE_CAP_EXTENDED_SECONDS = 24 * 60 * 60
@@ -41,6 +43,7 @@ const migrations: Record<number, (raw: Raw) => Raw> = {
   1: (raw) => raw,
   2: (raw) => raw,
   3: (raw) => raw,
+  4: (raw) => raw,
 }
 
 export class SaveError extends Error {}
@@ -80,6 +83,7 @@ const PROTOCOLS: ProtocolId[] = ['balance', 'mining', 'factory']
 const THEMES: ThemeId[] = ['classic', 'void', 'nebula', 'terminal']
 const CHALLENGE_IDS: ChallengeId[] = CHALLENGES.map((c) => c.id)
 const EXPEDITION_KIND_IDS: ExpeditionKind[] = EXPEDITION_KINDS.map((k) => k.kind)
+const SKILL_IDS: SkillId[] = SKILLS.map((sk) => sk.id)
 
 function normalize(raw: Raw): GameState {
   const base = createInitialState()
@@ -164,6 +168,8 @@ function normalize(raw: Raw): GameState {
     challengesDone: ids(raw.challengesDone, CHALLENGE_IDS),
     expeditions: normalizeExpeditions(raw.expeditions),
     autoPrestigeAt: Math.max(0, num(raw.autoPrestigeAt, 0)),
+    xp: Math.max(0, num(raw.xp, 0)),
+    skills: ids(raw.skills, SKILL_IDS),
     theme: THEMES.includes(raw.theme as ThemeId) ? (raw.theme as ThemeId) : 'classic',
     asteroidSkin:
       typeof raw.asteroidSkin === 'number' && Number.isInteger(raw.asteroidSkin) && raw.asteroidSkin >= 0

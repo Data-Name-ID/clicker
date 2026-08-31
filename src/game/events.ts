@@ -1,5 +1,6 @@
 import { eligibleEvents, eventDef } from './content/events'
 import { hasShip } from './content/ship'
+import { hasSkill } from './content/skills'
 import { hasUpgrade, multipliers, productionPerSecond } from './economy'
 import type { EventId, GameState, Resources } from './types'
 
@@ -18,8 +19,20 @@ export function nextEventDelay(state: GameState, roll: number): number {
   let delay = EVENT_DELAY_BASE + roll * EVENT_DELAY_SPREAD
   if (hasShip(state, 'darkAntenna')) delay /= 1.5
   if (state.artifact === 'lotteryTicket') delay /= 2
+  if (hasSkill(state, 'astro1')) delay /= 1.15
+  if (hasSkill(state, 'astro4')) delay /= 1.25
   return delay
 }
+
+export const eventDurationMultiplier = (state: GameState): number => (hasSkill(state, 'astro2') ? 1.5 : 1)
+
+export const meteorRewardSeconds = (state: GameState): number => (hasSkill(state, 'astro3') ? 60 : METEOR_REWARD_SECONDS)
+
+export const cometRewardSeconds = (state: GameState): number => (hasSkill(state, 'astro5') ? 1200 : COMET_REWARD_SECONDS)
+
+export const caravanRate = (state: GameState): number => (hasSkill(state, 'astro6') ? 0.9 : CARAVAN_RATE)
+
+export const blackMarketRate = (state: GameState): number => (hasSkill(state, 'astro6') ? 0.33 : BLACK_MARKET_RATE)
 
 export function addResources(state: GameState, delta: Partial<Resources>): GameState {
   const resources = { ...state.resources }
@@ -63,7 +76,7 @@ export function tickEvents(state: GameState, dt: number, rolls: [number, number]
   return {
     state: {
       ...state,
-      effects: { ...state.effects, event: { id: picked.id, remaining: picked.duration } },
+      effects: { ...state.effects, event: { id: picked.id, remaining: picked.duration * eventDurationMultiplier(state) } },
       eventCountdown: nextEventDelay(state, rolls[1]),
       stats: { ...state.stats, eventsSeen: state.stats.eventsSeen + 1 },
     },
@@ -79,7 +92,7 @@ export function startRandomEvent(state: GameState, rolls: [number, number]): Eve
   return {
     state: {
       ...state,
-      effects: { ...state.effects, event: { id: picked.id, remaining: picked.duration } },
+      effects: { ...state.effects, event: { id: picked.id, remaining: picked.duration * eventDurationMultiplier(state) } },
       eventCountdown: nextEventDelay(state, rolls[1]),
       stats: { ...state.stats, eventsSeen: state.stats.eventsSeen + 1 },
     },
@@ -103,18 +116,18 @@ export function declineOffer(state: GameState): GameState {
 export function acceptCaravan(state: GameState): GameState {
   if (state.effects.event?.id !== 'caravan') return state
   const given = state.resources.ore / 2
-  return clearEvent(addResources(state, { ore: -given, alloy: given * CARAVAN_RATE }))
+  return clearEvent(addResources(state, { ore: -given, alloy: given * caravanRate(state) }))
 }
 
 export function acceptBlackMarket(state: GameState): GameState {
   if (state.effects.event?.id !== 'blackMarket') return state
   const given = state.resources.alloy / 2
-  return clearEvent(addResources(state, { alloy: -given, chip: given * BLACK_MARKET_RATE }))
+  return clearEvent(addResources(state, { alloy: -given, chip: given * blackMarketRate(state) }))
 }
 
 export function catchComet(state: GameState): GameState {
   if (state.effects.event?.id !== 'comet') return state
-  return clearEvent(addResources(state, { ore: productionPerSecond(state) * COMET_REWARD_SECONDS }))
+  return clearEvent(addResources(state, { ore: productionPerSecond(state) * cometRewardSeconds(state) }))
 }
 
 export function catchStrayDrone(state: GameState): GameState {
@@ -127,7 +140,7 @@ export function catchStrayDrone(state: GameState): GameState {
 }
 
 export function catchMeteor(state: GameState): GameState {
-  const withOre = addResources(state, { ore: productionPerSecond(state) * METEOR_REWARD_SECONDS })
+  const withOre = addResources(state, { ore: productionPerSecond(state) * meteorRewardSeconds(state) })
   const slingRefund = hasUpgrade(state, 'sling') ? SLING_REFUND_MS : 0
   return {
     ...withOre,

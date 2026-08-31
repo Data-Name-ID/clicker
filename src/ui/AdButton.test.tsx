@@ -24,7 +24,7 @@ describe('AdButton tooltip', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Подробнее: Экстренная поставка' }))
 
-    expect(screen.getByRole('tooltip')).toHaveTextContent('за 30 мин')
+    expect(screen.getByRole('tooltip')).toHaveTextContent('за 15 мин')
 
     fireEvent.click(screen.getByRole('button', { name: 'Подробнее: Экстренная поставка' }))
 

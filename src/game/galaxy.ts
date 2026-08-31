@@ -1,5 +1,6 @@
 import { challengeDef } from './content/challenges'
 import { hasShip } from './content/ship'
+import { hasSkill } from './content/skills'
 import { talentLevel } from './content/talents'
 import { activateQuest } from './quests'
 import { createInitialState, type ChallengeId, type GameState } from './types'
@@ -11,7 +12,11 @@ export const canGalaxyReset = (state: GameState): boolean =>
   state.prestigeCount >= GALAXY_MIN_PRESTIGES && state.darkMatter >= GALAXY_MIN_DARK_MATTER
 
 export const shardsGain = (state: GameState): number =>
-  Math.floor(Math.sqrt(state.darkMatter / 10) * (1 + 0.1 * talentLevel(state, 'shardResonance')))
+  Math.floor(
+    Math.sqrt(state.darkMatter / 10) *
+      (1 + 0.1 * talentLevel(state, 'shardResonance')) *
+      (hasSkill(state, 'dark7') ? 1.2 : 1),
+  )
 
 export function startingBuildings(state: GameState, withShip: boolean): GameState['buildings'] {
   const fresh = createInitialState().buildings

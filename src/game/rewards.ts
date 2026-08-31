@@ -1,4 +1,5 @@
 import { hasShip, autoDrillRate } from './content/ship'
+import { hasSkill } from './content/skills'
 import { talentLevel } from './content/talents'
 import { clickValue, multipliers } from './economy'
 import { addResources } from './events'
@@ -17,8 +18,8 @@ export type AdPlacement =
 
 export const BOOST_DURATION = 10 * 60
 export const BOOST_COOLDOWN_MS = 30 * 60 * 1000
-export const SUPPLY_SECONDS = 30 * 60
-export const SUPPLY_COOLDOWN_MS = 45 * 60 * 1000
+export const SUPPLY_SECONDS = 15 * 60
+export const SUPPLY_COOLDOWN_MS = 60 * 60 * 1000
 export const METEOR_DURATION = 30
 export const METEOR_COOLDOWN_MS = 10 * 60 * 1000
 export const REROLL_COOLDOWN_MS = 30 * 60 * 1000
@@ -29,13 +30,14 @@ export const boostDuration = (state: GameState): number =>
   hasShip(state, 'thrusters') ? BOOST_DURATION * THRUSTERS_MULTIPLIER : BOOST_DURATION
 
 export const meteorDuration = (state: GameState): number =>
-  hasShip(state, 'thrusters') ? METEOR_DURATION * THRUSTERS_MULTIPLIER : METEOR_DURATION
+  (hasShip(state, 'thrusters') ? METEOR_DURATION * THRUSTERS_MULTIPLIER : METEOR_DURATION) +
+  (hasSkill(state, 'astro7') ? 15 : 0)
 
 export const supplySeconds = (state: GameState): number =>
   hasShip(state, 'longRange') ? SUPPLY_SECONDS * 2 : SUPPLY_SECONDS
 
 export const cooldownScale = (state: GameState): number =>
-  state.artifact === 'smuggledBooster' ? 0.5 : 1
+  (state.artifact === 'smuggledBooster' ? 0.5 : 1) * (hasSkill(state, 'captain5') ? 0.8 : 1)
 
 export const recordAdWatched = (state: GameState): GameState => ({
   ...state,

@@ -11,6 +11,7 @@ import {
   canPrestige,
   coreMultiplier,
   darkMatterGain,
+  spinupFactor,
 } from '../game/prestige'
 import { useGame } from '../store/context'
 import { AdButton } from './AdButton'
@@ -144,9 +145,10 @@ export function PrestigePanel() {
   const artifact = useGame((s) => s.game.artifact)
   const shipUpgrades = useGame((s) => s.game.shipUpgrades)
   const ready = useGame((s) => canPrestige(s.game))
-  const gain = useGame((s) => darkMatterGain(s.game))
-  const bonusGain = useGame((s) => bonusDarkMatterGain(s.game))
+  const gain = useGame((s) => darkMatterGain(s.game, s.now))
+  const bonusGain = useGame((s) => bonusDarkMatterGain(s.game, s.now))
   const coresMult = useGame((s) => coreMultiplier(s.game))
+  const spinup = useGame((s) => spinupFactor(s.game, s.now))
   const prestige = useGame((s) => s.prestige)
   const buyShip = useGame((s) => s.buyShip)
   const progress = Math.min(1, runChips / PRESTIGE_THRESHOLD)
@@ -178,9 +180,12 @@ export function PrestigePanel() {
         Награда: <b className="dm">{gain}</b> тёмной материи
         {ready ? '' : ` — нужно ещё ${formatNumber(PRESTIGE_THRESHOLD - runChips)} чипов`}
       </p>
+      {spinup < 1 && (
+        <p className="muted">Двигатели ещё разгоняются: награда ×{spinup.toFixed(2)} — полная через 5 минут забега.</p>
+      )}
       <p className="muted">
         ИИ-ядра усиливают награду: {formatNumber(runCores)} ядер за этот забег дают множитель ×{coresMult.toFixed(2)}.
-        Первые 50 ядер удваивают награду, дальше рост замедляется.
+        Первые 50 ядер удваивают награду, дальше рост замедляется (потолок ×10).
       </p>
       <div className="actions">
         <button type="button" className="btn btn--primary" disabled={!ready} onClick={prestige}>

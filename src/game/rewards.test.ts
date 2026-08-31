@@ -24,21 +24,21 @@ describe('applyBoost', () => {
 })
 
 describe('applySupply', () => {
-  it('gives the same resources as 30 minutes of simulate', () => {
+  it('gives the same resources as 15 minutes of simulate', () => {
     const state = buildState({ buildings: { drone: 10, smelter: 2, factory: 1 }, resources: { ore: 50 } })
 
     const next = applySupply(state, NOW)
 
-    expect(next.resources).toEqual(simulateChunked(state, 1800, 60).resources)
-    expect(next.resources.chip).toBeCloseTo(720, 6)
+    expect(next.resources).toEqual(simulateChunked(state, 900, 60).resources)
+    expect(next.resources.chip).toBeCloseTo(360, 6)
   })
 
-  it('sets a 45 minute cooldown and keeps effect timers', () => {
+  it('sets a 60 minute cooldown and keeps effect timers', () => {
     const state = buildState({ effects: { boostRemaining: 300 } })
 
     const next = applySupply(state, NOW)
 
-    expect(next.cooldowns.supplyUntil).toBe(NOW + 45 * 60 * 1000)
+    expect(next.cooldowns.supplyUntil).toBe(NOW + 60 * 60 * 1000)
     expect(next.effects.boostRemaining).toBe(300)
   })
 })

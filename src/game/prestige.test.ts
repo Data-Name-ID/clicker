@@ -130,3 +130,35 @@ describe('customization after prestige', () => {
     expect(after.asteroidSkin).toBe(2)
   })
 })
+
+describe('anti-abuse', () => {
+  it('caps fixed dark matter bonuses at the base reward', () => {
+    const state = buildState({ talents: { darkVein: 3 }, skills: ['dark3', 'dark6'], stats: { runChips: 10_000 } })
+
+    expect(darkMatterGain(state)).toBe(6)
+  })
+
+  it('spin-up scales the reward for runs under 5 minutes', () => {
+    const NOW = 1_700_000_000_000
+    const state = buildState({ stats: { runChips: 40_000, runStartedAt: NOW - 150_000 } })
+
+    expect(darkMatterGain(state)).toBe(6)
+    expect(darkMatterGain(state, NOW)).toBe(3)
+    expect(darkMatterGain(state, NOW + 150_000)).toBe(6)
+  })
+})
+
+describe('core multiplier cap', () => {
+  it('never exceeds x10', () => {
+    const state = buildState({ stats: { runChips: 1_000_000, runCores: 1_000_000 } })
+
+    expect(darkMatterGain(state)).toBe(316)
+  })
+})
+
+describe('chips soft cap', () => {
+  it('slows the base reward beyond a million chips', () => {
+    expect(darkMatterGain(buildState({ stats: { runChips: 1_000_000 } }))).toBe(31)
+    expect(darkMatterGain(buildState({ stats: { runChips: 100_000_000 } }))).toBe(100)
+  })
+})

@@ -153,6 +153,16 @@ export type TalentId =
   | 'shardResonance'
   | 'autoPrestige'
 
+export type SkillTreeId = 'miner' | 'swarm' | 'eng' | 'astro' | 'captain' | 'dark'
+
+export type SkillId =
+  | 'miner1' | 'miner2' | 'miner3' | 'miner4' | 'miner5' | 'miner6' | 'miner7' | 'miner8'
+  | 'swarm1' | 'swarm2' | 'swarm3' | 'swarm4' | 'swarm5' | 'swarm6' | 'swarm7' | 'swarm8'
+  | 'eng1' | 'eng2' | 'eng3' | 'eng4' | 'eng5' | 'eng6' | 'eng7' | 'eng8'
+  | 'astro1' | 'astro2' | 'astro3' | 'astro4' | 'astro5' | 'astro6' | 'astro7' | 'astro8'
+  | 'captain1' | 'captain2' | 'captain3' | 'captain4' | 'captain5' | 'captain6' | 'captain7' | 'captain8'
+  | 'dark1' | 'dark2' | 'dark3' | 'dark4' | 'dark5' | 'dark6' | 'dark7' | 'dark8'
+
 export type ChallengeId = 'silence' | 'inflation' | 'blind' | 'ascetic' | 'soloDrones' | 'sprint'
 
 export type ExpeditionKind = 'short' | 'long' | 'deep'
@@ -236,7 +246,7 @@ export interface QuestState {
 }
 
 export interface GameState {
-  version: 4
+  version: 5
   resources: Resources
   darkMatter: number
   buildings: Record<BuildingId, number>
@@ -266,6 +276,8 @@ export interface GameState {
   challengesDone: ChallengeId[]
   expeditions: Expedition[]
   autoPrestigeAt: number
+  xp: number
+  skills: SkillId[]
   tutorialDismissed: boolean
   tutorialSeen: TutorialStepId[]
   savedAt: number
@@ -275,7 +287,7 @@ export const zeroResources = (): Resources => ({ ore: 0, alloy: 0, chip: 0, core
 
 export function createInitialState(): GameState {
   return {
-    version: 4,
+    version: 5,
     resources: zeroResources(),
     darkMatter: 0,
     buildings: { drone: 0, excavator: 0, smelter: 0, factory: 0, laser: 0, neurolab: 0 },
@@ -336,6 +348,8 @@ export function createInitialState(): GameState {
     challengesDone: [],
     expeditions: [],
     autoPrestigeAt: 0,
+    xp: 0,
+    skills: [],
     tutorialDismissed: false,
     tutorialSeen: [],
     savedAt: 0,

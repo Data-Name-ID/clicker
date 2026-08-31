@@ -26,7 +26,7 @@ describe('migrate', () => {
     const restored = migrate({ version: 1, resources: { ore: 10 }, buildings: { drone: 2 }, savedAt: 5 })
 
     expect(restored).toEqual(buildState({ resources: { ore: 10 }, buildings: { drone: 2 }, savedAt: 5 }))
-    expect(restored.version).toBe(4)
+    expect(restored.version).toBe(5)
     expect(restored.resources.core).toBe(0)
     expect(restored.protocol).toBe('balance')
     expect(restored.shipUpgrades).toEqual([])

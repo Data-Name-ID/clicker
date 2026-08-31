@@ -126,10 +126,10 @@ describe('protocols', () => {
 })
 
 describe('applyClick extras', () => {
-  it('resonance adds one second of producer output per click', () => {
+  it('resonance adds a fifth of a second of producer output per click', () => {
     const next = applyClick(buildState({ upgrades: ['resonance'], buildings: { drone: 10 } }), 0)
 
-    expect(next.resources.ore).toBeCloseTo(6.05, 10)
+    expect(next.resources.ore).toBeCloseTo(2.05, 10)
   })
 
   it('tracks the click burst window', () => {
@@ -254,5 +254,13 @@ describe('dark matter soft cap', () => {
   it('grows as a square root beyond the cap', () => {
     expect(darkMatterMultiplier(buildState({ darkMatter: 400 }))).toBe(22)
     expect(darkMatterMultiplier(buildState({ darkMatter: 50_000 }))).toBeCloseTo(245.97, 1)
+  })
+})
+
+describe('achievement bonus', () => {
+  it('each achievement adds 2 % to all production', () => {
+    const state = buildState({ buildings: { drone: 10 }, achievements: ['clicks100', 'ore1k'] })
+
+    expect(productionPerSecond(state)).toBeCloseTo(5.2, 10)
   })
 })

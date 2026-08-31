@@ -22,6 +22,7 @@ import { collectExpedition, startExpedition } from '../game/expeditions'
 import { applyDischarge, buyBuilding, buyUpgrade, canAfford, costOf, isBuildingVisible, performClick, setProtocol } from '../game/economy'
 import { BUILDING_IDS } from '../game/content/buildings'
 import { checkQuests } from '../game/quests'
+import { XP_REWARDS, addXp, learnSkill, levelFromXp } from '../game/skills'
 import {
   acceptBlackMarket,
   acceptCaravan,
@@ -65,6 +66,7 @@ import {
   type ProtocolId,
   type Resources,
   type ShipUpgradeId,
+  type SkillId,
   type TalentId,
   type ThemeId,
   type UpgradeId,
@@ -77,7 +79,7 @@ export const DISCO_DURATION_MS = 10_000
 
 export type ToastKind = 'achievement' | 'info' | 'error' | 'event'
 
-export type TabId = 'buildings' | 'upgrades' | 'achievements' | 'prestige' | 'settings'
+export type TabId = 'buildings' | 'upgrades' | 'skills' | 'achievements' | 'prestige' | 'settings'
 
 export interface Toast {
   id: number
@@ -147,6 +149,7 @@ export interface GameStore {
   exitChallenge(): void
   setAutoPrestigeAt(value: number): void
   setAutoBuyer(on: boolean): void
+  learnSkill(id: SkillId): void
   startExpedition(kind: ExpeditionKind, drones: number): void
   collectExpedition(index: number): void
   start(): void
@@ -176,15 +179,23 @@ export function createGameStore({
     }
 
     const commit = (game: GameState, extra: Partial<GameStore> = {}) => {
+      const levelBefore = levelFromXp(get().game.xp)
       const quests = checkQuests(game)
-      const earned = newAchievements(quests.state)
-      set({ game: grantAchievements(quests.state, earned), ...extra })
+      const rewarded = quests.completed.length
+        ? addXp(quests.state, XP_REWARDS.quest * quests.completed.length)
+        : quests.state
+      const earned = newAchievements(rewarded)
+      set({ game: grantAchievements(rewarded, earned), ...extra })
       for (const done of quests.completed) {
         pushToast('info', `Задание: ${done.name}`, done.rewardText)
       }
       for (const id of earned) {
         const def = achievementDef(id)
         pushToast('achievement', `Достижение: ${def.name}`, def.description)
+      }
+      const levelAfter = levelFromXp(get().game.xp)
+      if (levelAfter > levelBefore) {
+        pushToast('info', `Уровень ${levelAfter}!`, `+${levelAfter - levelBefore} очко навыка`)
       }
     }
 
@@ -206,7 +217,7 @@ export function createGameStore({
       } else {
         after = pickArtifact(after, random())
       }
-      commit(after)
+      commit(addXp(after, XP_REWARDS.prestige))
       pushToast('info', 'Перелёт завершён', `+${gain} тёмной материи`)
       if (outcome) {
         if (outcome.success) {
@@ -247,8 +258,8 @@ export function createGameStore({
       autoBuyerOn: true,
 
       click: (rhythmBonus = false) => {
-        const result = performClick(get().game, clock(), random(), rhythmBonus ? 2 : 1)
-        commit(result.state)
+        const result = performClick(get().game, clock(), random(), rhythmBonus ? 2 : 1, random())
+        commit(addXp(result.state, XP_REWARDS.click))
         return { gain: result.gain, crit: result.crit, combo: result.combo }
       },
 
@@ -256,7 +267,7 @@ export function createGameStore({
         const before = get().game
         const next = applyDischarge(before)
         if (next === before) return
-        commit(next, { shakeSeq: get().shakeSeq + 1 })
+        commit(addXp(next, XP_REWARDS.discharge), { shakeSeq: get().shakeSeq + 1 })
         pushToast('info', 'РАЗРЯД!', `+${Math.round(next.resources.ore - before.resources.ore)} руды за 60 секунд производства`)
       },
 
@@ -264,7 +275,7 @@ export function createGameStore({
         const before = get().game
         const next = buyBuilding(before, id, count)
         if (!next) return
-        commit(next)
+        commit(addXp(next, XP_REWARDS.building * (next.buildings[id] - before.buildings[id])))
         if (id === 'drone' && before.buildings.drone < 100 && next.buildings.drone >= 100) {
           pushToast('info', 'Дрон №100 просит выходной', 'Отказано. Норма — 24/7.')
         }
@@ -272,7 +283,7 @@ export function createGameStore({
 
       buyUpgrade: (id) => {
         const next = buyUpgrade(get().game, id)
-        if (next) commit(next)
+        if (next) commit(addXp(next, XP_REWARDS.upgrade))
       },
 
       buyShip: (id) => {
@@ -289,7 +300,7 @@ export function createGameStore({
       prestige: () => {
         const { game } = get()
         if (!canPrestige(game)) return
-        doPrestige(game, darkMatterGain(game))
+        doPrestige(game, darkMatterGain(game, clock()))
       },
 
       tick: (now) => {
@@ -333,7 +344,7 @@ export function createGameStore({
           next = { ...next, catCountdown: nextCatDelay(random()) }
         }
         if (discoUntil > 0 && now > discoUntil) extra.discoUntil = 0
-        commit(next, extra)
+        commit(eventResult.started ? addXp(next, XP_REWARDS.event) : next, extra)
         if (eventResult.started) {
           const def = eventDef(eventResult.started)
           pushToast('event', def.name, def.description)
@@ -343,9 +354,9 @@ export function createGameStore({
           talentLevel(after, 'autoPrestige') > 0 &&
           after.autoPrestigeAt > 0 &&
           canPrestige(after) &&
-          darkMatterGain(after) >= after.autoPrestigeAt
+          darkMatterGain(after, now) >= after.autoPrestigeAt
         ) {
-          doPrestige(after, darkMatterGain(after))
+          doPrestige(after, darkMatterGain(after, now))
         }
       },
 
@@ -412,7 +423,7 @@ export function createGameStore({
             break
           }
           case 'prestigeBonus': {
-            doPrestige(current, bonusDarkMatterGain(current))
+            doPrestige(current, bonusDarkMatterGain(current, at))
             break
           }
         }
@@ -446,7 +457,7 @@ export function createGameStore({
       clickMeteor: () => {
         const { game } = get()
         if (!isMeteorShowerActive(game)) return
-        commit(catchMeteor(game))
+        commit(addXp(catchMeteor(game), XP_REWARDS.meteor))
       },
 
       clickCat: () => {
@@ -518,7 +529,7 @@ export function createGameStore({
         const { game } = get()
         if (!canGalaxyReset(game)) return
         const gain = shardsGain(game)
-        commit(applyGalaxyReset(game, clock()))
+        commit(addXp(applyGalaxyReset(game, clock()), XP_REWARDS.galaxy))
         pushToast('info', 'Межгалактический прыжок', `+${gain} осколков звёзд`)
       },
 
@@ -545,6 +556,11 @@ export function createGameStore({
 
       setAutoBuyer: (on) => set({ autoBuyerOn: on }),
 
+      learnSkill: (id) => {
+        const next = learnSkill(get().game, id)
+        if (next) commit(next)
+      },
+
       startExpedition: (kind, drones) => {
         const next = startExpedition(get().game, kind, drones, clock())
         if (!next) return
@@ -555,7 +571,7 @@ export function createGameStore({
       collectExpedition: (index) => {
         const result = collectExpedition(get().game, index, clock(), [random(), random()])
         if (!result) return
-        commit(result.state)
+        commit(addXp(result.state, XP_REWARDS.expedition))
         if (result.outcome === 'fail') {
           pushToast('error', 'Экспедиция провалилась', result.lostDrones > 0 ? `Потеряно дронов: ${result.lostDrones}` : 'Дроны спасены страховкой')
         } else if (result.outcome === 'rare') {

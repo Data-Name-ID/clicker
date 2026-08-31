@@ -1,4 +1,5 @@
 import { hasShip } from './content/ship'
+import { hasSkill } from './content/skills'
 import { talentLevel } from './content/talents'
 import { activateQuest } from './quests'
 import { hasUpgrade } from './economy'
@@ -7,6 +8,7 @@ import { createInitialState, type GameState } from './types'
 export const PRESTIGE_THRESHOLD = 10_000
 export const PRESTIGE_BONUS_MULTIPLIER = 1.5
 export const SPEEDRUN_MS = 30 * 60 * 1000
+export const SPINUP_MS = 5 * 60 * 1000
 
 export const canPrestige = (state: GameState): boolean => state.stats.runChips >= PRESTIGE_THRESHOLD
 
@@ -14,17 +16,36 @@ export function coreDivisor(state: GameState): number {
   let divisor = 50
   if (hasUpgrade(state, 'singularity')) divisor *= 0.8
   if (state.artifact === 'darkSeed') divisor *= 0.7
+  if (hasSkill(state, 'dark5')) divisor *= 0.9
   return divisor
 }
 
+export const CORE_MULTIPLIER_CAP = 10
+
 export const coreMultiplier = (state: GameState): number =>
-  1 + Math.sqrt(Math.max(0, state.stats.runCores) / coreDivisor(state))
+  Math.min(CORE_MULTIPLIER_CAP, 1 + Math.sqrt(Math.max(0, state.stats.runCores) / coreDivisor(state)))
 
-export const darkMatterGain = (state: GameState): number =>
-  Math.floor(Math.sqrt(state.stats.runChips / 1000) * coreMultiplier(state)) + talentLevel(state, 'darkVein')
+export function spinupFactor(state: GameState, now = 0): number {
+  if (now <= 0 || state.stats.runStartedAt <= 0) return 1
+  return Math.min(1, Math.max(0, (now - state.stats.runStartedAt) / SPINUP_MS))
+}
 
-export const bonusDarkMatterGain = (state: GameState): number =>
-  Math.floor(darkMatterGain(state) * PRESTIGE_BONUS_MULTIPLIER)
+export const CHIPS_SOFT_CAP = 1_000_000
+
+export function baseGain(runChips: number): number {
+  if (runChips <= CHIPS_SOFT_CAP) return Math.sqrt(runChips / 1000)
+  return Math.sqrt(CHIPS_SOFT_CAP / 1000) * (runChips / CHIPS_SOFT_CAP) ** 0.25
+}
+
+export function darkMatterGain(state: GameState, now = 0): number {
+  const base = Math.floor(baseGain(state.stats.runChips) * coreMultiplier(state))
+  const fixed =
+    talentLevel(state, 'darkVein') + (hasSkill(state, 'dark3') ? 1 : 0) + (hasSkill(state, 'dark6') ? 2 : 0)
+  return Math.floor((base + Math.min(fixed, base)) * spinupFactor(state, now))
+}
+
+export const bonusDarkMatterGain = (state: GameState, now = 0): number =>
+  Math.floor(darkMatterGain(state, now) * PRESTIGE_BONUS_MULTIPLIER)
 
 export function applyPrestige(state: GameState, gain: number, now = 0): GameState {
   const fresh = createInitialState()
@@ -84,6 +105,8 @@ export function applyPrestige(state: GameState, gain: number, now = 0): GameStat
     challengesDone: state.challengesDone,
     expeditions: state.expeditions,
     autoPrestigeAt: state.autoPrestigeAt,
+    xp: state.xp,
+    skills: state.skills,
     theme: state.theme,
     asteroidSkin: state.asteroidSkin,
     tutorialDismissed: state.tutorialDismissed,

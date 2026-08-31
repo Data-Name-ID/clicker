@@ -3,6 +3,7 @@ import { TAB_ICONS } from '../assets/sprites'
 import { availableUpgrades } from '../game/content/upgrades'
 import { canAfford } from '../game/economy'
 import { canPrestige } from '../game/prestige'
+import { skillPoints } from '../game/skills'
 import { useGame } from '../store/context'
 import type { TabId } from '../store/gameStore'
 import { AchievementList } from './AchievementList'
@@ -19,6 +20,7 @@ import { PrestigePanel } from './PrestigePanel'
 import { QuestPanel } from './QuestPanel'
 import { ResourceBar } from './ResourceBar'
 import { SettingsPanel } from './SettingsPanel'
+import { SkillsPanel } from './SkillsPanel'
 import { StartScreen } from './StartScreen'
 import { Toasts } from './Toast'
 import { Tutorial } from './Tutorial'
@@ -27,6 +29,7 @@ import { UpgradeList } from './UpgradeList'
 const TABS: { id: TabId; label: string }[] = [
   { id: 'buildings', label: 'Здания' },
   { id: 'upgrades', label: 'Улучшения' },
+  { id: 'skills', label: 'Навыки' },
   { id: 'achievements', label: 'Достижения' },
   { id: 'prestige', label: 'Перелёт' },
   { id: 'settings', label: 'Настройки' },
@@ -35,6 +38,7 @@ const TABS: { id: TabId; label: string }[] = [
 const PANELS: Record<TabId, () => React.JSX.Element> = {
   buildings: BuildingList,
   upgrades: UpgradeList,
+  skills: SkillsPanel,
   achievements: AchievementList,
   prestige: PrestigePanel,
   settings: SettingsPanel,
@@ -51,6 +55,7 @@ export function App() {
     availableUpgrades(s.game).filter((u) => canAfford(s.game.resources, u.cost)).length,
   )
   const prestigeReady = useGame((s) => canPrestige(s.game))
+  const freePoints = useGame((s) => skillPoints(s.game))
   const shakeSeq = useGame((s) => s.shakeSeq)
   const [shaking, setShaking] = useState(false)
 
@@ -71,7 +76,7 @@ export function App() {
       const target = event.target as HTMLElement | null
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return
       const key = event.key.length === 1 ? event.key.toLowerCase() : event.key
-      const tabIndex = ['1', '2', '3', '4', '5'].indexOf(event.key)
+      const tabIndex = ['1', '2', '3', '4', '5', '6'].indexOf(event.key)
       if (tabIndex >= 0) setTab(TABS[tabIndex].id)
       position = key === KONAMI[position] ? position + 1 : key === KONAMI[0] ? 1 : 0
       if (position === KONAMI.length) {
@@ -120,6 +125,7 @@ export function App() {
                 <span className="tab__label">{t.label}</span>
                 {t.id === 'upgrades' && upgradesReady > 0 && <span className="tab__badge">{upgradesReady}</span>}
                 {t.id === 'prestige' && prestigeReady && <span className="tab__badge tab__badge--ready">!</span>}
+                {t.id === 'skills' && freePoints > 0 && <span className="tab__badge tab__badge--skill">{freePoints}</span>}
               </button>
             ))}
           </nav>

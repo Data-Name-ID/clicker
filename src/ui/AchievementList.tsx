@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ACHIEVEMENTS } from '../game/content/achievements'
+import { ACHIEVEMENT_BONUS } from '../game/economy'
 import { formatDuration, formatNumber } from '../game/format'
 import { useGame } from '../store/context'
 
@@ -64,7 +65,8 @@ export function AchievementList() {
       ) : (
         <>
           <p className="muted">
-            Получено {earned.length} из {ACHIEVEMENTS.length}
+            Получено {earned.length} из {ACHIEVEMENTS.length} · каждое даёт +{Math.round(ACHIEVEMENT_BONUS * 100)} % ко
+            всему производству — сейчас <b className="achv-bonus">+{Math.round(earned.length * ACHIEVEMENT_BONUS * 100)} %</b>
           </p>
           <div className="badges">
             {ACHIEVEMENTS.map((a) => {

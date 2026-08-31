@@ -56,8 +56,8 @@ describe('collectExpedition', () => {
     const result = collectExpedition(ready, 0, NOW, [0.9, 0.9])!
 
     expect(result.outcome).toBe('normal')
-    expect(result.state.resources.ore).toBe(13_500)
-    expect(result.state.resources.alloy).toBe(1_350)
+    expect(result.state.resources.ore).toBe(9000)
+    expect(result.state.resources.alloy).toBe(900)
     expect(result.state.stats.expeditionsDone).toBe(1)
     expect(result.state.expeditions).toEqual([])
   })
@@ -66,7 +66,7 @@ describe('collectExpedition', () => {
     const result = collectExpedition(ready, 0, NOW, [0.2, 0.1])!
 
     expect(result.outcome).toBe('rare')
-    expect(result.state.resources.chip).toBe(270)
+    expect(result.state.resources.chip).toBe(180)
     expect(result.darkMatter).toBe(1)
     expect(result.state.darkMatter).toBe(1)
   })

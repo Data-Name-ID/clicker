@@ -31,6 +31,8 @@ import tabBuildingsOn from './sprites/tab-buildings-on.png'
 import tabPrestige from './sprites/tab-prestige.png'
 import tabPrestigeOn from './sprites/tab-prestige-on.png'
 import tabSettings from './sprites/tab-settings.png'
+import tabSkills from './sprites/tab-skills.png'
+import tabSkillsOn from './sprites/tab-skills-on.png'
 import tabSettingsOn from './sprites/tab-settings-on.png'
 import tabUpgrades from './sprites/tab-upgrades.png'
 import tabUpgradesOn from './sprites/tab-upgrades-on.png'
@@ -66,11 +68,12 @@ export const buildingSprite = (id: BuildingId): string => SPRITES[`building-${id
 export const resourceSprite = (id: ResourceId | 'darkMatter'): string =>
   id === 'darkMatter' ? SPRITES['res-darkmatter'] : SPRITES[`res-${id}`]
 
-export type TabIconId = 'buildings' | 'upgrades' | 'achievements' | 'prestige' | 'settings'
+export type TabIconId = 'buildings' | 'upgrades' | 'skills' | 'achievements' | 'prestige' | 'settings'
 
 export const TAB_ICONS: Record<TabIconId, { off: string; on: string }> = {
   buildings: { off: tabBuildings, on: tabBuildingsOn },
   upgrades: { off: tabUpgrades, on: tabUpgradesOn },
+  skills: { off: tabSkills, on: tabSkillsOn },
   achievements: { off: tabAchievements, on: tabAchievementsOn },
   prestige: { off: tabPrestige, on: tabPrestigeOn },
   settings: { off: tabSettings, on: tabSettingsOn },

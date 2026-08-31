@@ -1,10 +1,12 @@
 import { BUILDINGS, COST_GROWTH, buildingDef } from './content/buildings'
 import { upgradeDef } from './content/upgrades'
 import { hasShip } from './content/ship'
+import { hasSkill } from './content/skills'
 import { talentLevel } from './content/talents'
 import { tutorialStep } from './tutorial'
 import type {
   BuildingId,
+  SkillId,
   Cost,
   GameState,
   ProcessorId,
@@ -15,6 +17,7 @@ import type {
 } from './types'
 
 export const DARK_MATTER_BONUS = 0.1
+export const ACHIEVEMENT_BONUS = 0.02
 export const BOOST_MULTIPLIER = 2
 export const METEOR_CLICK_MULTIPLIER = 10
 export const CLICK_BURST_WINDOW_MS = 10_000
@@ -108,12 +111,16 @@ export interface Multipliers {
 
 export const DM_SOFT_CAP = 100
 
+export const dmSoftCap = (state: GameState): number => (hasSkill(state, 'dark2') ? 120 : DM_SOFT_CAP)
+
 export function darkMatterMultiplier(state: GameState): number {
   const sealBonus = state.artifact === 'voidSeal' ? 1.5 : 1
+  const stable = hasSkill(state, 'dark4') ? 1.1 : 1
+  const cap = dmSoftCap(state)
   const dm = state.darkMatter * sealBonus
-  if (dm <= DM_SOFT_CAP) return 1 + DARK_MATTER_BONUS * dm
-  const capped = 1 + DARK_MATTER_BONUS * DM_SOFT_CAP
-  return capped * Math.sqrt(1 + (dm - DM_SOFT_CAP) / DM_SOFT_CAP)
+  if (dm <= cap) return (1 + DARK_MATTER_BONUS * dm) * stable
+  const capped = 1 + DARK_MATTER_BONUS * cap
+  return capped * Math.sqrt(1 + (dm - cap) / cap) * stable
 }
 
 const multipliersCache = new WeakMap<GameState, Multipliers>()
@@ -163,18 +170,54 @@ export function multipliers(state: GameState): Multipliers {
     m.processor[id].output *= mult
   }
 
-  m.processor.smelter.input *= 1 + 0.01 * state.buildings.excavator
-  m.processor.smelter.output *= 1 + 0.01 * state.buildings.excavator
-  const conveyor = 1 + 0.01 * Math.floor(state.buildings.drone / 5)
+  const syn = hasSkill(state, 'swarm7') ? 2 : 1
+  m.processor.smelter.input *= 1 + 0.01 * syn * state.buildings.excavator
+  m.processor.smelter.output *= 1 + 0.01 * syn * state.buildings.excavator
+  const conveyor = 1 + 0.01 * syn * Math.floor(state.buildings.drone / 5)
   m.processor.factory.input *= conveyor
   m.processor.factory.output *= conveyor
-  m.producer.laser *= 1 + 0.05 * state.buildings.neurolab
-  m.click *= 1 + 0.005 * totalBuildings(state)
+  m.producer.laser *= 1 + 0.05 * syn * state.buildings.neurolab
+  m.click *= 1 + 0.005 * syn * totalBuildings(state)
+
+  if (hasSkill(state, 'miner1')) m.click *= 1.5
+  if (hasSkill(state, 'miner3')) m.click *= 2
+  if (hasSkill(state, 'miner8')) m.click *= 2
+  if (hasSkill(state, 'swarm1')) m.producer.drone *= 1.25
+  if (hasSkill(state, 'swarm3')) m.producer.drone *= 1.5
+  if (hasSkill(state, 'swarm2')) m.producer.excavator *= 1.25
+  if (hasSkill(state, 'swarm4')) m.producer.excavator *= 1.5
+  if (hasSkill(state, 'swarm5')) m.producerAll *= 1.15
+  if (hasSkill(state, 'swarm6')) m.producer.laser *= 1.5
+  if (hasSkill(state, 'swarm8')) m.producerAll *= 1.5
+  const engBoosts: [SkillId, ProcessorId, number][] = [
+    ['eng1', 'smelter', 1.25],
+    ['eng5', 'smelter', 1.5],
+    ['eng2', 'factory', 1.25],
+    ['eng4', 'factory', 1.5],
+    ['eng6', 'neurolab', 1.25],
+  ]
+  for (const [skill, proc, mult] of engBoosts) {
+    if (hasSkill(state, skill)) {
+      m.processor[proc].input *= mult
+      m.processor[proc].output *= mult
+    }
+  }
+  for (const [skill, mult] of [['eng7', 1.25], ['eng8', 1.5]] as [SkillId, number][]) {
+    if (hasSkill(state, skill)) {
+      for (const proc of Object.values(m.processor)) {
+        proc.input *= mult
+        proc.output *= mult
+      }
+    }
+  }
+  if (hasSkill(state, 'eng3')) m.processor.smelter.minEfficiency = Math.max(m.processor.smelter.minEfficiency, 0.1)
+  if (hasSkill(state, 'astro8') && state.effects.event) m.global *= 1.25
+  if (hasSkill(state, 'dark8')) m.global *= 1 + 0.25 * Math.min(4, state.galaxyCount)
 
   if (hasUpgrade(state, 'ionwind')) m.producer.drone *= 1 + 0.01 * state.buildings.excavator
   if (hasUpgrade(state, 'tailings')) m.processor.smelter.minEfficiency = Math.max(m.processor.smelter.minEfficiency, 0.25)
   if (hasUpgrade(state, 'dream')) m.processor.neurolab.minEfficiency = Math.max(m.processor.neurolab.minEfficiency, 0.5)
-  if (hasUpgrade(state, 'resonance')) m.clickProducerSeconds += 1
+  if (hasUpgrade(state, 'resonance')) m.clickProducerSeconds += 0.2
 
   if (state.protocol === 'mining') {
     m.producerAll *= 1.5
@@ -232,7 +275,7 @@ export function multipliers(state: GameState): Multipliers {
       }
       break
     case 'oreFever':
-      m.clickProducerSeconds += 2
+      m.clickProducerSeconds += 1
       break
     case 'dataFog':
       m.processor.neurolab.input *= 3
@@ -244,6 +287,7 @@ export function multipliers(state: GameState): Multipliers {
   }
 
   m.producerAll *= 1 + 0.25 * talentLevel(state, 'oreMemory')
+  m.global *= 1 + ACHIEVEMENT_BONUS * state.achievements.length
   m.global *= darkMatterMultiplier(state)
   if (state.effects.boostRemaining > 0) m.global *= BOOST_MULTIPLIER
   multipliersCache.set(state, m)
@@ -315,10 +359,16 @@ export function netRates(state: GameState): Resources {
 }
 
 export const critChance = (state: GameState): number =>
-  hasUpgrade(state, 'crit1') ? UPGRADED_CRIT_CHANCE : BASE_CRIT_CHANCE
+  (hasUpgrade(state, 'crit1') ? UPGRADED_CRIT_CHANCE : BASE_CRIT_CHANCE) + (hasSkill(state, 'miner2') ? 0.03 : 0)
+
+export const critMultiplier = (state: GameState): number => (hasSkill(state, 'miner4') ? 15 : CRIT_MULTIPLIER)
+
+export const comboWindowMs = (state: GameState): number => (hasSkill(state, 'miner6') ? 3000 : COMBO_WINDOW_MS)
+
+export const dischargeSeconds = (state: GameState): number => (hasSkill(state, 'miner7') ? 90 : DISCHARGE_SECONDS)
 
 export const comboActive = (state: GameState, now: number): number =>
-  state.combo > 0 && now - state.lastClickAt <= COMBO_WINDOW_MS ? state.combo : 0
+  state.combo > 0 && now - state.lastClickAt <= comboWindowMs(state) ? state.combo : 0
 
 export const comboMultiplier = (combo: number): number =>
   1 + Math.min(COMBO_MAX, Math.max(0, combo - 1)) / COMBO_MAX
@@ -330,12 +380,13 @@ export interface ClickResult {
   combo: number
 }
 
-export function performClick(state: GameState, now = 0, roll = 1, bonus = 1): ClickResult {
+export function performClick(state: GameState, now = 0, roll = 1, bonus = 1, echoRoll = 1): ClickResult {
   const m = multipliers(state)
   const combo = Math.min(COMBO_MAX + 1, comboActive(state, now) + 1)
   const crit = roll < critChance(state)
+  const echo = hasSkill(state, 'miner5') && echoRoll < 0.1 ? 2 : 1
   const gain =
-    clickValue(state, m) * comboMultiplier(combo) * (crit ? CRIT_MULTIPLIER : 1) * bonus +
+    clickValue(state, m) * comboMultiplier(combo) * (crit ? critMultiplier(state) : 1) * bonus * echo +
     productionPerSecond(state, m) * m.clickProducerSeconds
   const ore = state.resources.ore + gain
   const inWindow = now - state.stats.clickBurstStart <= CLICK_BURST_WINDOW_MS
@@ -364,7 +415,7 @@ export const applyClick = (state: GameState, now = 0): GameState => performClick
 
 export function applyDischarge(state: GameState): GameState {
   if (state.charge < CHARGE_MAX) return state
-  const gain = productionPerSecond(state) * DISCHARGE_SECONDS
+  const gain = productionPerSecond(state) * dischargeSeconds(state)
   return {
     ...state,
     charge: 0,

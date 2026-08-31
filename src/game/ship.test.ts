@@ -54,8 +54,8 @@ describe('thrusters and long range', () => {
   it('double the supply window', () => {
     const state = buildState({ buildings: { drone: 10 }, shipUpgrades: ['longRange'] })
 
-    expect(supplySeconds(state)).toBe(3600)
-    expect(applySupply(state, NOW).resources.ore).toBe(simulateChunked(state, 3600, 60).resources.ore)
+    expect(supplySeconds(state)).toBe(1800)
+    expect(applySupply(state, NOW).resources.ore).toBe(simulateChunked(state, 1800, 60).resources.ore)
   })
 })
 

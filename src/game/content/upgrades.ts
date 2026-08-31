@@ -21,7 +21,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'click1',
     name: 'Алмазные буры',
-    description: 'Клик ×2',
+    description: 'Бьёшь вдвое сильнее',
     effect: { target: 'click', multiplier: 2 },
     cost: { ore: 50 },
     requirement: 'добыто 100 руды',
@@ -30,7 +30,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'click2',
     name: 'Плазменный резак',
-    description: 'Клик ×2',
+    description: 'Удар снова вдвое сильнее',
     effect: { target: 'click', multiplier: 2 },
     cost: { ore: 500 },
     requirement: '10 дронов',
@@ -39,7 +39,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'drone1',
     name: 'Автопилот дронов',
-    description: 'Дроны ×2',
+    description: 'Дроны копают вдвое быстрее',
     effect: { target: 'drone', multiplier: 2 },
     cost: { ore: 500 },
     requirement: '10 дронов',
@@ -48,7 +48,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'excavator1',
     name: 'Титановые ковши',
-    description: 'Экскаваторы ×2',
+    description: 'Экскаваторы черпают вдвое больше',
     effect: { target: 'excavator', multiplier: 2 },
     cost: { ore: 2000 },
     requirement: '10 экскаваторов',
@@ -57,7 +57,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'drone2',
     name: 'Рой дронов',
-    description: 'Дроны ×2',
+    description: 'Дроны снова вдвое быстрее',
     effect: { target: 'drone', multiplier: 2 },
     cost: { alloy: 200 },
     requirement: '25 дронов',
@@ -66,7 +66,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'smelter1',
     name: 'Плазменная печь',
-    description: 'Плавильни работают в 2 раза быстрее',
+    description: 'Плавильни жарят вдвое быстрее',
     effect: { target: 'smelter', input: 2, output: 2 },
     cost: { alloy: 300 },
     requirement: '10 плавилен',
@@ -75,7 +75,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'excavator2',
     name: 'Автономные экскаваторы',
-    description: 'Экскаваторы ×2',
+    description: 'Экскаваторы снова вдвое мощнее',
     effect: { target: 'excavator', multiplier: 2 },
     cost: { alloy: 1000 },
     requirement: '25 экскаваторов',
@@ -84,7 +84,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'smelter2',
     name: 'Катализатор',
-    description: 'Плавильни дают +50 % сплава без роста расхода руды',
+    description: 'Плавильни дают +50 % сплава, руды жгут столько же',
     effect: { target: 'smelter', input: 1, output: 1.5 },
     cost: { chip: 50 },
     requirement: '25 плавилен',
@@ -93,7 +93,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'drone3',
     name: 'Дроны-репликаторы',
-    description: 'Дроны ×2',
+    description: 'Дроны копают ещё вдвое быстрее',
     effect: { target: 'drone', multiplier: 2 },
     cost: { chip: 100 },
     requirement: '50 дронов',
@@ -102,7 +102,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'factory1',
     name: 'Нанолитография',
-    description: 'Фабрики работают в 2 раза быстрее',
+    description: 'Фабрики печатают вдвое быстрее',
     effect: { target: 'factory', input: 2, output: 2 },
     cost: { chip: 100 },
     requirement: '10 фабрик',
@@ -111,7 +111,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'click3',
     name: 'Гравитационный захват',
-    description: 'Клик ×3',
+    description: 'Удар втрое сильнее',
     effect: { target: 'click', multiplier: 3 },
     cost: { chip: 500 },
     requirement: '1 фабрика',
@@ -120,7 +120,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'factory2',
     name: 'Чистые комнаты',
-    description: 'Фабрики дают +50 % чипов без роста расхода сплава',
+    description: 'Фабрики дают +50 % чипов даром',
     effect: { target: 'factory', input: 1, output: 1.5 },
     cost: { chip: 1000 },
     requirement: '25 фабрик',
@@ -129,7 +129,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'laser1',
     name: 'Фокусировка',
-    description: 'Лазеры ×2',
+    description: 'Лазеры бьют вдвое сильнее',
     effect: { target: 'laser', multiplier: 2 },
     cost: { chip: 5000 },
     requirement: '10 лазеров',
@@ -138,7 +138,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'global1',
     name: 'Тёмная энергия',
-    description: 'Всё производство ×1,5',
+    description: 'Всё производство в полтора раза быстрее',
     effect: { target: 'global', multiplier: 1.5 },
     cost: { chip: 10000 },
     requirement: '1 перелёт',
@@ -147,7 +147,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'crowd',
     name: 'Эффект толпы',
-    description: 'Каждый десятый клик приносит в 10 раз больше руды',
+    description: 'Каждый десятый удар — в десять раз жирнее',
     effect: { target: 'special' },
     cost: { ore: 5000 },
     requirement: '500 кликов',
@@ -156,7 +156,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ionwind',
     name: 'Ионный ветер',
-    description: 'Каждый экскаватор ускоряет дронов на 1 %',
+    description: 'Каждый экскаватор подгоняет дронов на 1 %',
     effect: { target: 'special' },
     cost: { alloy: 800 },
     requirement: '10 экскаваторов',
@@ -165,7 +165,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'tailings',
     name: 'Переплавка хвостов',
-    description: 'Плавильни работают минимум на 25 % даже без руды',
+    description: 'Плавильни не простаивают: четверть мощности всегда',
     effect: { target: 'special' },
     cost: { chip: 400 },
     requirement: '10 плавилен',
@@ -174,7 +174,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'sling',
     name: 'Гравитационная праща',
-    description: 'Пойманный метеор снимает 10 секунд кулдауна «Перегрузки»',
+    description: 'Пойманный метеор снимает 10 секунд с перезарядки перегрузки',
     effect: { target: 'special' },
     cost: { chip: 1500 },
     requirement: '10 пойманных метеоров',
@@ -183,7 +183,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'resonance',
     name: 'Рудный резонанс',
-    description: 'Каждый клик даёт +1 секунду работы всех добытчиков',
+    description: 'Каждый удар подгоняет добытчиков на пятую долю секунды',
     effect: { target: 'special' },
     cost: { chip: 2000 },
     requirement: '25 дронов',
@@ -192,7 +192,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'crit1',
     name: 'Резонансный удар',
-    description: 'Шанс крита 5 % → 10 %',
+    description: 'Криты случаются вдвое чаще',
     effect: { target: 'special' },
     cost: { alloy: 1500 },
     requirement: '1 000 кликов',
@@ -201,7 +201,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'lab1',
     name: 'Параллельные вычисления',
-    description: 'Нейролаборатории работают в 2 раза быстрее',
+    description: 'Лаборатории думают вдвое быстрее',
     effect: { target: 'neurolab', input: 2, output: 2 },
     cost: { core: 100 },
     requirement: '5 нейролабораторий',
@@ -210,7 +210,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ai1',
     name: 'Предиктивная добыча',
-    description: 'Всё производство ×1,5',
+    description: 'ИИ подсказывает, где копать: всё производство +50 %',
     effect: { target: 'global', multiplier: 1.5 },
     cost: { core: 200 },
     requirement: 'произведено 100 ядер',
@@ -219,7 +219,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'protocols',
     name: 'Протоколы ИИ',
-    description: 'Открывает режимы работы: ДОБЫЧА / ЗАВОД / БАЛАНС',
+    description: 'Открывает режимы работы базы',
     effect: { target: 'special' },
     cost: { core: 300 },
     requirement: '10 нейролабораторий',
@@ -228,7 +228,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'laser2',
     name: 'ИИ-наводка',
-    description: 'Лазеры ×3',
+    description: 'Лазеры бьют втрое сильнее',
     effect: { target: 'laser', multiplier: 3 },
     cost: { core: 400 },
     requirement: '25 лазеров',
@@ -237,7 +237,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'click4',
     name: 'Оптимизатор кликов',
-    description: 'Клик ×5',
+    description: 'Удар впятеро сильнее',
     effect: { target: 'click', multiplier: 5 },
     cost: { core: 600 },
     requirement: '10 000 кликов',
@@ -246,7 +246,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'factory3',
     name: 'Самосборка',
-    description: 'Фабрики дают вдвое больше чипов без роста расхода',
+    description: 'Фабрики дают вдвое больше чипов даром',
     effect: { target: 'factory', input: 1, output: 2 },
     cost: { core: 1000 },
     requirement: '50 фабрик',
@@ -255,7 +255,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'smelter3',
     name: 'Квантовое сжатие',
-    description: 'Плавильни работают в 3 раза быстрее',
+    description: 'Плавильни жарят втрое быстрее',
     effect: { target: 'smelter', input: 3, output: 3 },
     cost: { core: 1500 },
     requirement: '50 плавилен',
@@ -264,7 +264,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'dream',
     name: 'Сны машин',
-    description: 'Нейролаборатории работают минимум на 50 % даже без чипов',
+    description: 'Лаборатории работают вполсилы даже без чипов',
     effect: { target: 'special' },
     cost: { core: 2500 },
     requirement: '25 нейролабораторий',
@@ -273,7 +273,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'ai2',
     name: 'Сверхразум',
-    description: 'Всё производство ×2',
+    description: 'Всё производство вдвое быстрее',
     effect: { target: 'global', multiplier: 2 },
     cost: { core: 5000 },
     requirement: 'произведено 10 000 ядер',
@@ -282,7 +282,7 @@ export const UPGRADES: UpgradeDef[] = [
   {
     id: 'singularity',
     name: 'Сингулярность',
-    description: 'Ядра сильнее усиливают награду перелёта (порог 50 → 40)',
+    description: 'Ядра сильнее разгоняют награду за перелёт',
     effect: { target: 'special' },
     cost: { core: 10_000 },
     requirement: '3 перелёта',

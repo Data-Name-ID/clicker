@@ -26,9 +26,6 @@ function GalaxySection() {
   const [confirmJump, setConfirmJump] = useState(false)
   const ready = canGalaxyReset(game)
   const gain = shardsGain(game)
-  const visible = game.galaxyCount > 0 || game.shards > 0 || game.prestigeCount >= 3
-  if (!visible) return null
-
   return (
     <section className="galaxy">
       <h3>Галактика</h3>
@@ -36,7 +33,7 @@ function GalaxySection() {
         Осколков звёзд: <b className="shards">{game.shards}</b> · галактик: {game.galaxyCount}
       </p>
       <p className="muted">
-        Прыжок сжигает тёмную материю, здания, улучшения и артефакты. Корабль, достижения и таланты остаются. Нужно{' '}
+        Прыжок сжигает материю, здания, улучшения и артефакты. Корабль, достижения и таланты остаются. Нужно{' '}
         {GALAXY_MIN_PRESTIGES} перелётов ({game.prestigeCount}/{GALAXY_MIN_PRESTIGES}) и {GALAXY_MIN_DARK_MATTER} ТМ (
         {formatNumber(game.darkMatter)}/{GALAXY_MIN_DARK_MATTER}).
       </p>
@@ -107,7 +104,7 @@ function GalaxySection() {
         })}
       </div>
       <h3>Испытания</h3>
-      <p className="muted">Спец-забег с ограничением: доберись до перелёта — получишь осколки (один раз за испытание).</p>
+      <p className="muted">Забег с подвохом: долети до перелёта — получишь осколки. За каждое испытание платят один раз.</p>
       <div className="challenges">
         {CHALLENGES.map((c) => {
           const done = game.challengesDone.includes(c.id)
@@ -137,7 +134,10 @@ function GalaxySection() {
   )
 }
 
+type PrestigeView = 'flight' | 'ship' | 'galaxy'
+
 export function PrestigePanel() {
+  const [view, setView] = useState<PrestigeView>('flight')
   const runChips = useGame((s) => s.game.stats.runChips)
   const runCores = useGame((s) => s.game.stats.runCores)
   const darkMatter = useGame((s) => s.game.darkMatter)
@@ -151,13 +151,40 @@ export function PrestigePanel() {
   const spinup = useGame((s) => spinupFactor(s.game, s.now))
   const prestige = useGame((s) => s.prestige)
   const buyShip = useGame((s) => s.buyShip)
+  const shipReady = useGame((s) =>
+    SHIP_UPGRADES.filter((u) => !s.game.shipUpgrades.includes(u.id) && s.game.darkMatter >= u.cost && (!u.requires || s.game.shipUpgrades.includes(u.requires))).length,
+  )
+  const galaxyReady = useGame((s) => canGalaxyReset(s.game))
   const progress = Math.min(1, runChips / PRESTIGE_THRESHOLD)
+
+  const views: { id: PrestigeView; label: string; badge?: string }[] = [
+    { id: 'flight', label: 'Перелёт' },
+    { id: 'ship', label: 'Корабль', badge: shipReady > 0 ? String(shipReady) : undefined },
+    { id: 'galaxy', label: 'Галактика', badge: galaxyReady ? '!' : undefined },
+  ]
 
   return (
     <div className="panel-body">
+      <div className="segmented" role="group" aria-label="Раздел перелёта">
+        {views.map((v) => (
+          <button
+            type="button"
+            key={v.id}
+            className={`btn btn--seg ${view === v.id ? 'btn--on' : ''}`}
+            onClick={() => setView(v.id)}
+            aria-pressed={view === v.id}
+          >
+            {v.label}
+            {v.badge && <span className="seg-badge">{v.badge}</span>}
+          </button>
+        ))}
+      </div>
+      {view === 'flight' && (
+        <>
+
       <p>
-        Перелёт сбрасывает ресурсы, здания и улучшения, но даёт <b>тёмную материю</b>: +10 % ко всему за единицу.
-        После 100 ТМ отдача растёт медленнее — излишки выгоднее сжигать в Галактике.
+        Перелёт обнуляет ресурсы, здания и улучшения, зато даёт <b>тёмную материю</b> — по +10 % ко всему за единицу.
+        После сотни отдача растёт медленнее, так что излишки лучше сжигать в Галактике.
       </p>
       <p className="muted">
         Перелётов: {prestigeCount} · Тёмной материи: {formatNumber(darkMatter)}
@@ -181,11 +208,11 @@ export function PrestigePanel() {
         {ready ? '' : ` — нужно ещё ${formatNumber(PRESTIGE_THRESHOLD - runChips)} чипов`}
       </p>
       {spinup < 1 && (
-        <p className="muted">Двигатели ещё разгоняются: награда ×{spinup.toFixed(2)} — полная через 5 минут забега.</p>
+        <p className="muted">Двигатели ещё разгоняются: пока ×{spinup.toFixed(2)}, полная награда через пять минут забега.</p>
       )}
       <p className="muted">
-        ИИ-ядра усиливают награду: {formatNumber(runCores)} ядер за этот забег дают множитель ×{coresMult.toFixed(2)}.
-        Первые 50 ядер удваивают награду, дальше рост замедляется (потолок ×10).
+        Ядра усиливают награду: {formatNumber(runCores)} за забег дают ×{coresMult.toFixed(2)}. Первые полсотни удваивают
+        награду, дальше прибавка тает (выше ×10 не поднимется).
       </p>
       <div className="actions">
         <button type="button" className="btn btn--primary" disabled={!ready} onClick={prestige}>
@@ -193,10 +220,13 @@ export function PrestigePanel() {
         </button>
         <AdButton placement="prestigeBonus" label={`Перелёт с бонусом (+${bonusGain})`} disabled={!ready} />
       </div>
+        </>
+      )}
+      {view === 'ship' && (
       <section className="ship">
         <h3>Корабль</h3>
         <p className="muted">
-          Улучшения за тёмную материю — навсегда. Внимание: трата ТМ уменьшает пассивный бонус (−10 % за единицу).
+          Всё купленное остаётся навсегда. Но помни: потраченная материя больше не разгоняет добычу.
         </p>
         {SHIP_UPGRADES.map((u) => {
           const bought = shipUpgrades.includes(u.id)
@@ -223,7 +253,8 @@ export function PrestigePanel() {
           )
         })}
       </section>
-      <GalaxySection />
+      )}
+      {view === 'galaxy' && <GalaxySection />}
     </div>
   )
 }

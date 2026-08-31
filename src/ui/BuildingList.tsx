@@ -7,7 +7,6 @@ import type { ProtocolId } from '../game/types'
 import { useGame } from '../store/context'
 import { AdButton } from './AdButton'
 import { BuildingCard, type BuyAmount } from './BuildingCard'
-import { ExpeditionsPanel } from './ExpeditionsPanel'
 
 const PROTOCOLS: { id: ProtocolId; label: string }[] = [
   { id: 'balance', label: 'Баланс' },
@@ -58,8 +57,7 @@ export function BuildingList() {
           ))}
         </div>
       )}
-      <ExpeditionsPanel />
-      {visible.length === 0 && <p className="empty">Кликайте по астероиду — здания появятся, когда накопится руда.</p>}
+      {visible.length === 0 && <p className="empty">Бей по астероиду — здания появятся, как накопится руда.</p>}
       {visible.map((id) => (
         <BuildingCard key={id} id={id} amount={amount} />
       ))}

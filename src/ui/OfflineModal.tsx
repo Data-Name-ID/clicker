@@ -13,7 +13,7 @@ export function OfflineModal() {
     <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="offline-title">
       <div className="modal frame">
         <h2 id="offline-title">Пока вас не было</h2>
-        <p className="muted">Прошло {formatDuration(offline.elapsed * 1000)} (не более 8 часов)</p>
+        <p className="muted">Тебя не было {formatDuration(offline.elapsed * 1000)} — база работала сама</p>
         <ul className="gains">
           {RESOURCE_IDS.map((id) => (
             <li key={id} className={`gain gain--${id}`}>

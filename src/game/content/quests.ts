@@ -20,7 +20,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'clicks50',
     name: 'Первые удары',
-    description: 'Кликни по астероиду 50 раз',
+    description: 'Стукни по астероиду пятьдесят раз',
     metric: (s) => s.stats.clicks,
     goal: () => 50,
     reward: () => ({ ore: 50 }),
@@ -29,7 +29,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'drones5',
     name: 'Пять помощников',
-    description: 'Купи 5 дронов',
+    description: 'Заведи пятерых дронов',
     metric: (s) => s.buildings.drone,
     goal: () => 5,
     reward: () => ({ ore: 100 }),
@@ -38,7 +38,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'ore500',
     name: 'Первая выработка',
-    description: 'Добудь 500 руды',
+    description: 'Накопай 500 руды',
     metric: (s) => s.stats.totalProduced.ore,
     goal: () => 500,
     reward: () => ({ ore: 150 }),
@@ -47,7 +47,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'smelters3',
     name: 'Литейный цех',
-    description: 'Купи 3 плавильни',
+    description: 'Поставь три плавильни',
     metric: (s) => s.buildings.smelter,
     goal: () => 3,
     reward: () => ({ ore: 200 }),
@@ -65,7 +65,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'combo10',
     name: 'Разогрев пальцев',
-    description: 'Набери комбо 10: кликай без пауз — перерыв дольше 2 секунд сбрасывает серию',
+    description: 'Набери комбо 10: бей без пауз, перерыв дольше двух секунд всё сбросит',
     metric: (s) => s.stats.comboBest,
     goal: () => 10,
     reward: () => ({ ore: 300 }),
@@ -75,7 +75,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'excavators5',
     name: 'Тяжёлая техника',
-    description: 'Купи 5 экскаваторов',
+    description: 'Пригони пять экскаваторов',
     metric: (s) => s.buildings.excavator,
     goal: () => 5,
     reward: () => ({ alloy: 100 }),
@@ -84,7 +84,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'clicks500',
     name: 'Рабочий ритм',
-    description: 'Кликни ещё 500 раз',
+    description: 'Ещё пятьсот ударов по астероиду',
     metric: (s) => s.stats.clicks,
     goal: () => 500,
     reward: oreReward(300, 500),
@@ -102,7 +102,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'chips100',
     name: 'Кремниевый поток',
-    description: 'Произведи 100 чипов',
+    description: 'Напечатай 100 чипов',
     metric: (s) => s.stats.totalProduced.chip,
     goal: () => 100,
     reward: () => ({ chip: 25 }),
@@ -111,7 +111,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'meteors3',
     name: 'Ловкость рук',
-    description: 'Поймай 3 метеора',
+    description: 'Поймай три метеора',
     metric: (s) => s.stats.meteorsCaught,
     goal: () => 3,
     reward: oreReward(600, 1000),
@@ -120,7 +120,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'events3',
     name: 'Свидетель',
-    description: 'Переживи 3 события',
+    description: 'Переживи три события',
     metric: (s) => s.stats.eventsSeen,
     goal: () => 3,
     reward: () => ({ chip: 50 }),
@@ -129,7 +129,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'drones25',
     name: 'Рой',
-    description: 'Доведи дронов до 25',
+    description: 'Доведи стаю дронов до 25',
     metric: (s) => s.buildings.drone,
     goal: () => 25,
     reward: () => ({ chip: 75 }),
@@ -148,7 +148,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'chips2500',
     name: 'Конвейер чипов',
-    description: 'Произведи 2 500 чипов',
+    description: 'Напечатай 2 500 чипов',
     metric: (s) => s.stats.totalProduced.chip,
     goal: () => 2500,
     reward: () => ({ chip: 200 }),
@@ -176,7 +176,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'cores100',
     name: 'Мысли роятся',
-    description: 'Произведи 100 ядер',
+    description: 'Обучи 100 ядер',
     metric: (s) => s.stats.totalProduced.core,
     goal: () => 100,
     reward: () => ({ core: 25 }),
@@ -185,7 +185,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'prestige1',
     name: 'Пора лететь',
-    description: 'Соверши перелёт',
+    description: 'Улети к новому астероиду',
     metric: (s) => s.prestigeCount,
     goal: () => 1,
     reward: () => ({ core: 50 }),
@@ -194,7 +194,7 @@ export const QUEST_CHAIN: QuestDef[] = [
   {
     id: 'ship1',
     name: 'Обустройство',
-    description: 'Купи улучшение корабля',
+    description: 'Прокачай корабль',
     metric: (s) => s.shipUpgrades.length,
     goal: () => 1,
     reward: () => ({ core: 100 }),
@@ -206,7 +206,7 @@ export const QUEST_REPEATABLE: QuestDef[] = [
   {
     id: 'clicksR',
     name: 'Вечный бур',
-    description: 'Кликни 1 000 раз',
+    description: 'Стукни по астероиду тысячу раз',
     metric: (s) => s.stats.clicks,
     goal: () => 1000,
     reward: oreReward(600, 2000),
@@ -215,7 +215,7 @@ export const QUEST_REPEATABLE: QuestDef[] = [
   {
     id: 'oreR',
     name: 'Норма выработки',
-    description: 'Добудь час производства руды',
+    description: 'Накопай столько руды, сколько даёт час работы',
     metric: (s) => s.stats.totalProduced.ore,
     goal: (s) => Math.max(5000, productionPerSecond(s) * 3600),
     reward: oreReward(1800, 2500),
@@ -224,7 +224,7 @@ export const QUEST_REPEATABLE: QuestDef[] = [
   {
     id: 'meteorsR',
     name: 'Каменный град',
-    description: 'Поймай 10 метеоров',
+    description: 'Поймай десять метеоров',
     metric: (s) => s.stats.meteorsCaught,
     goal: () => 10,
     reward: () => ({ chip: 150 }),
@@ -233,7 +233,7 @@ export const QUEST_REPEATABLE: QuestDef[] = [
   {
     id: 'eventsR',
     name: 'Хроника происшествий',
-    description: 'Переживи 5 событий',
+    description: 'Переживи пять событий',
     metric: (s) => s.stats.eventsSeen,
     goal: () => 5,
     reward: () => ({ core: 25 }),
@@ -242,7 +242,7 @@ export const QUEST_REPEATABLE: QuestDef[] = [
   {
     id: 'chipsR',
     name: 'Большой заказ',
-    description: 'Произведи 10 000 чипов',
+    description: 'Напечатай 10 000 чипов',
     metric: (s) => s.stats.totalProduced.chip,
     goal: () => 10_000,
     reward: () => ({ core: 50 }),

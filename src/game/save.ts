@@ -75,7 +75,7 @@ function ids<T extends string>(v: unknown, known: readonly T[]): T[] {
 
 const UPGRADE_IDS: UpgradeId[] = UPGRADES.map((u) => u.id)
 const ACHIEVEMENT_IDS: AchievementId[] = ACHIEVEMENTS.map((a) => a.id)
-const TUTORIAL_STEP_IDS: TutorialStepId[] = ['click', 'drone', 'ads', 'smelter', 'ore', 'factory', 'cores', 'prestige']
+const TUTORIAL_STEP_IDS: TutorialStepId[] = ['click', 'quests', 'drone', 'combo', 'ads', 'smelter', 'ore', 'events', 'skills', 'factory', 'cores', 'expeditions', 'bonuses', 'prestige', 'shipInfo', 'galaxyInfo']
 const ARTIFACT_IDS: ArtifactId[] = ARTIFACTS.map((a) => a.id)
 const SHIP_IDS: ShipUpgradeId[] = SHIP_UPGRADES.map((u) => u.id)
 const EVENT_IDS: EventId[] = EVENTS.map((e) => e.id)

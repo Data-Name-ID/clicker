@@ -33,3 +33,22 @@ describe('SkillsPanel', () => {
     expect(screen.getByRole('button', { name: 'Изучить' })).toBeDisabled()
   })
 })
+
+describe('SkillsPanel interactivity', () => {
+  it('shows the hovered skill in the sky status line', () => {
+    renderWithStore(<SkillsPanel />)
+
+    fireEvent.mouseEnter(screen.getByTestId('skill-miner3'))
+
+    expect(screen.getByTestId('status-miner')).toHaveTextContent('Широкий захват — Удар вдвое сильнее')
+  })
+
+  it('clears the status line on mouse leave', () => {
+    renderWithStore(<SkillsPanel />)
+
+    fireEvent.mouseEnter(screen.getByTestId('skill-miner3'))
+    fireEvent.mouseLeave(screen.getByTestId('skill-miner3'))
+
+    expect(screen.getByTestId('status-miner')).toHaveTextContent('Наведи на звезду')
+  })
+})

@@ -17,7 +17,7 @@ describe('Tutorial', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Далее' }))
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.getByTestId('tour-hint')).toHaveTextContent('Тапай по астероиду 0 / 10')
+    expect(screen.getByTestId('tour-hint')).toHaveTextContent('Бей по астероиду — нужно десять ударов 0 / 10')
   })
 
   it('reopens the dialog from the hint', () => {
@@ -35,7 +35,7 @@ describe('Tutorial', () => {
 
     act(() => store.getState().click())
 
-    expect(screen.getByRole('dialog', { name: 'Обучение' })).toHaveTextContent('Первый дрон')
+    expect(screen.getByRole('dialog', { name: 'Обучение' })).toHaveTextContent('Задания')
   })
 
   it('switches to the buildings tab for the drone step', () => {
@@ -57,18 +57,26 @@ describe('Tutorial', () => {
     expect(store.getState().game.tutorialDismissed).toBe(true)
   })
 
-  it('explains ads after the first drone and moves on after "Понятно"', () => {
-    const { store } = renderWithStore(<Tutorial />, { stats: { clicks: 10 }, buildings: { drone: 1 } })
-    expect(screen.getByRole('dialog', { name: 'Обучение' })).toHaveTextContent('Реклама = бонусы')
+  it('explains combo then ads once the player earned them', () => {
+    const { store } = renderWithStore(<Tutorial />, {
+      stats: { clicks: 50 },
+      buildings: { drone: 5 },
+      tutorialSeen: ['quests'],
+    })
+    expect(screen.getByRole('dialog', { name: 'Обучение' })).toHaveTextContent('Ритм добычи')
 
     fireEvent.click(screen.getByRole('button', { name: 'Понятно' }))
 
-    expect(screen.getByRole('dialog', { name: 'Обучение' })).toHaveTextContent('Плавильня')
-    expect(store.getState().game.tutorialSeen).toEqual(['ads'])
+    expect(screen.getByRole('dialog', { name: 'Обучение' })).toHaveTextContent('Бонусы за рекламу')
+    expect(store.getState().game.tutorialSeen).toEqual(['quests', 'combo'])
   })
 
   it('explains ore consumption after the first smelter', () => {
-    renderWithStore(<Tutorial />, { stats: { clicks: 10 }, buildings: { drone: 1, smelter: 1 }, tutorialSeen: ['ads'] })
+    renderWithStore(<Tutorial />, {
+      stats: { clicks: 50 },
+      buildings: { drone: 5, smelter: 1 },
+      tutorialSeen: ['quests', 'combo', 'ads'],
+    })
 
     expect(screen.getByRole('dialog', { name: 'Обучение' })).toHaveTextContent('Расход руды')
   })
@@ -77,7 +85,8 @@ describe('Tutorial', () => {
     renderWithStore(<Tutorial />, {
       stats: { clicks: 10 },
       buildings: { drone: 1, smelter: 1, factory: 1 },
-      tutorialSeen: ['ads', 'ore', 'cores'],
+      prestigeCount: 2,
+      tutorialSeen: ['quests', 'combo', 'ads', 'ore', 'events', 'skills', 'cores', 'expeditions', 'bonuses', 'shipInfo'],
     })
 
     fireEvent.click(screen.getByRole('button', { name: 'Понятно' }))

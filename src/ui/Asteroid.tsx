@@ -4,6 +4,7 @@ import { CHARGE_MAX, clickValue, comboActive } from '../game/economy'
 import { formatNumber } from '../game/format'
 import { useGame, useGameApi } from '../store/context'
 import { AdButton } from './AdButton'
+import { ExpeditionsPanel } from './ExpeditionsPanel'
 
 interface Burst {
   id: number
@@ -151,13 +152,11 @@ export function Asteroid() {
         Клик: +{formatNumber(value)} руды
         {boostRemaining > 0 && <span className={`asteroid__beat ${beat ? 'asteroid__beat--on' : ''}`}> ♪ в такт ×2</span>}
       </p>
-      {combo > 1 && (
-        <div className="combo-bar" aria-label="Комбо">
-          <div className="combo-bar__fill" style={{ width: `${Math.min(100, combo - 1)}%` }} />
-          <span className="combo-bar__label">Комбо {combo}</span>
-        </div>
-      )}
-      <div className="charge" aria-label="Заряд реактора">
+      <div className={`combo-bar ${combo > 1 ? '' : 'combo-bar--idle'}`} aria-label="Комбо">
+        <div className="combo-bar__fill" style={{ width: `${Math.min(100, Math.max(0, combo - 1))}%` }} />
+        <span className="combo-bar__label">{combo > 1 ? `Комбо ${combo}` : 'Комбо'}</span>
+      </div>
+      <div className="charge" aria-label="Заряд реактора" data-tour="charge">
         <div className="charge__bar">
           <div className="charge__fill" style={{ width: `${charge}%` }} />
           <span className="charge__label">Заряд {charge} %</span>
@@ -181,6 +180,7 @@ export function Asteroid() {
         />
         <AdButton placement="eventRush" label="Вызвать событие" disabled={eventActive} className="asteroid-actions__wide" />
       </div>
+      <ExpeditionsPanel />
     </section>
   )
 }

@@ -9,18 +9,18 @@ export interface TalentDef {
 }
 
 export const TALENTS: TalentDef[] = [
-  { id: 'autoBuyer', name: 'Автопокупатель', description: 'Раз в секунду докупает самое дешёвое доступное здание (можно выключить)', maxLevel: 1, cost: () => 1 },
-  { id: 'eternalProtocol', name: 'Вечный протокол', description: 'Протоколы ИИ доступны с самого начала забега', maxLevel: 1, cost: () => 1 },
-  { id: 'startBoost', name: 'Стартовый рывок', description: '+5 дронов на старте каждого забега за уровень', maxLevel: 5, cost: () => 1 },
-  { id: 'oreMemory', name: 'Память руды', description: '+25 % ко всей добыче за уровень, навсегда', maxLevel: 5, cost: () => 2 },
-  { id: 'fastBoost', name: 'Быстрый разгон', description: 'Кулдаун «Перегрузки реактора» на 25 % короче', maxLevel: 1, cost: () => 2 },
-  { id: 'expeditionCorps', name: 'Экспедиционный корпус', description: '+1 слот экспедиций за уровень', maxLevel: 3, cost: () => 2 },
-  { id: 'autoEvents', name: 'Автособытия', description: 'Караван и чёрный рынок принимаются автоматически', maxLevel: 1, cost: () => 2 },
-  { id: 'insurance', name: 'Страховка', description: 'Провал экспедиции больше не теряет дронов', maxLevel: 1, cost: () => 3 },
-  { id: 'autoUpgrades', name: 'Автоулучшения', description: 'Доступные улучшения покупаются сами', maxLevel: 1, cost: () => 3 },
-  { id: 'darkVein', name: 'Тёмная жила', description: '+1 тёмной материи к каждому перелёту за уровень', maxLevel: 3, cost: () => 4 },
-  { id: 'shardResonance', name: 'Осколочный резонанс', description: '+10 % осколков за уровень', maxLevel: 3, cost: () => 5 },
-  { id: 'autoPrestige', name: 'Автоперелёт', description: 'Перелёт совершается сам при награде не меньше заданной', maxLevel: 1, cost: () => 8 },
+  { id: 'autoBuyer', name: 'Автопокупатель', description: 'Сам докупает самое дешёвое здание раз в секунду', maxLevel: 1, cost: () => 1 },
+  { id: 'eternalProtocol', name: 'Вечный протокол', description: 'Режимы базы доступны с первой секунды забега', maxLevel: 1, cost: () => 1 },
+  { id: 'startBoost', name: 'Стартовый рывок', description: 'Забег начинается с пятью дронами за уровень', maxLevel: 5, cost: () => 1 },
+  { id: 'oreMemory', name: 'Память руды', description: 'Вся добыча +25 % за уровень — навсегда', maxLevel: 5, cost: () => 2 },
+  { id: 'fastBoost', name: 'Быстрый разгон', description: 'Перегрузка перезаряжается на четверть быстрее', maxLevel: 1, cost: () => 2 },
+  { id: 'expeditionCorps', name: 'Экспедиционный корпус', description: 'Ещё один отряд в рейде за уровень', maxLevel: 3, cost: () => 2 },
+  { id: 'autoEvents', name: 'Автособытия', description: 'Выгодные обмены принимаются без тебя', maxLevel: 1, cost: () => 2 },
+  { id: 'insurance', name: 'Страховка', description: 'Из провального рейда возвращаются все дроны', maxLevel: 1, cost: () => 3 },
+  { id: 'autoUpgrades', name: 'Автоулучшения', description: 'Улучшения покупаются сами, как только по карману', maxLevel: 1, cost: () => 3 },
+  { id: 'darkVein', name: 'Тёмная жила', description: 'Каждый перелёт приносит на единицу материи больше', maxLevel: 3, cost: () => 4 },
+  { id: 'shardResonance', name: 'Осколочный резонанс', description: 'Осколков с прыжка на 10 % больше за уровень', maxLevel: 3, cost: () => 5 },
+  { id: 'autoPrestige', name: 'Автоперелёт', description: 'Улетает сам, когда награда дорастёт до твоей планки', maxLevel: 1, cost: () => 8 },
 ]
 
 export const talentDef = (id: TalentId): TalentDef => TALENTS.find((t) => t.id === id)!

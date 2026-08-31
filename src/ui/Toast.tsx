@@ -19,11 +19,15 @@ function ToastView({ toast }: { toast: ToastItem }) {
   )
 }
 
+const MAX_VISIBLE_TOASTS = 3
+
 export function Toasts() {
   const toasts = useGame((s) => s.toasts)
+  const visible = toasts.slice(-MAX_VISIBLE_TOASTS)
   return (
     <div className="toasts" aria-live="polite">
-      {toasts.map((t) => (
+      {toasts.length > MAX_VISIBLE_TOASTS && <div className="toasts__more">…ещё {toasts.length - MAX_VISIBLE_TOASTS}</div>}
+      {visible.map((t) => (
         <ToastView key={t.id} toast={t} />
       ))}
     </div>

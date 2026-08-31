@@ -10,13 +10,21 @@ interface StepTarget {
 
 const TARGETS: Record<TutorialStepId, StepTarget> = {
   click: { tab: 'buildings', selectors: ['[data-tour="asteroid"]'] },
+  quests: { tab: 'buildings', selectors: ['[data-tour="quest"]', '[data-tour="asteroid"]'] },
   drone: { tab: 'buildings', selectors: ['[data-tour="building-drone"]', '[data-tour="buildings"]'] },
+  combo: { tab: 'buildings', selectors: ['[data-tour="charge"]', '[data-tour="asteroid"]'] },
   ads: { tab: 'buildings', selectors: ['[data-tour="ad-buttons"]'] },
   smelter: { tab: 'buildings', selectors: ['[data-tour="building-smelter"]', '[data-tour="resource-ore"]'] },
   ore: { tab: 'buildings', selectors: ['[data-tour="building-smelter"]'] },
+  events: { tab: 'buildings', selectors: ['[data-tour="ad-buttons"]', '[data-tour="asteroid"]'] },
+  skills: { tab: 'buildings', selectors: ['[data-tour="tab-skills"]'] },
   factory: { tab: 'buildings', selectors: ['[data-tour="building-factory"]', '[data-tour="resource-alloy"]'] },
   cores: { tab: 'buildings', selectors: ['[data-tour="building-neurolab"]', '[data-tour="resource-chip"]'] },
+  expeditions: { tab: 'buildings', selectors: ['[data-tour="expeditions"]', '[data-tour="buildings"]'] },
+  bonuses: { tab: 'buildings', selectors: ['[data-tour="tab-achievements"]'] },
   prestige: { tab: 'buildings', selectors: ['[data-tour="tab-prestige"]'] },
+  shipInfo: { tab: 'buildings', selectors: ['[data-tour="tab-prestige"]'] },
+  galaxyInfo: { tab: 'buildings', selectors: ['[data-tour="tab-prestige"]'] },
 }
 
 interface Box {
@@ -145,7 +153,14 @@ export function Tutorial() {
           ) : (
             <>
               {info ? (
-                <button type="button" className="btn btn--primary" onClick={() => see(step.id)}>
+                <button
+                  type="button"
+                  className="btn btn--primary"
+                  onClick={() => {
+                    see(step.id)
+                    ack(step.id)
+                  }}
+                >
                   Понятно
                 </button>
               ) : (

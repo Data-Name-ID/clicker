@@ -37,15 +37,17 @@ export function baseGain(runChips: number): number {
   return Math.sqrt(CHIPS_SOFT_CAP / 1000) * (runChips / CHIPS_SOFT_CAP) ** 0.25
 }
 
+const FLOAT_EPSILON = 1e-9
+
 export function darkMatterGain(state: GameState, now = 0): number {
-  const base = Math.floor(baseGain(state.stats.runChips) * coreMultiplier(state))
+  const base = Math.floor(baseGain(state.stats.runChips) * coreMultiplier(state) + FLOAT_EPSILON)
   const fixed =
     talentLevel(state, 'darkVein') + (hasSkill(state, 'dark3') ? 1 : 0) + (hasSkill(state, 'dark6') ? 2 : 0)
-  return Math.floor((base + Math.min(fixed, base)) * spinupFactor(state, now))
+  return Math.floor((base + Math.min(fixed, base)) * spinupFactor(state, now) + FLOAT_EPSILON)
 }
 
 export const bonusDarkMatterGain = (state: GameState, now = 0): number =>
-  Math.floor(darkMatterGain(state, now) * PRESTIGE_BONUS_MULTIPLIER)
+  Math.floor(darkMatterGain(state, now) * PRESTIGE_BONUS_MULTIPLIER + 1e-9)
 
 export function applyPrestige(state: GameState, gain: number, now = 0): GameState {
   const fresh = createInitialState()

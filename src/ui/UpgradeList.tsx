@@ -16,7 +16,7 @@ export function UpgradeList() {
 
   return (
     <div className="panel-body">
-      {available.length === 0 && <p className="empty">Новых улучшений пока нет — стройте и добывайте.</p>}
+      {available.length === 0 && <p className="empty">Новых улучшений пока нет — стройся и копай.</p>}
       {available.map((id) => {
         const def = UPGRADES.find((u) => u.id === id)!
         const affordable = canAfford(resources, def.cost)

@@ -12,7 +12,6 @@ import { Asteroid } from './Asteroid'
 import { BuffBar } from './BuffBar'
 import { BuildingList } from './BuildingList'
 import { CatOverlay } from './CatOverlay'
-import { EventBanner } from './EventBanner'
 import { EventOverlays } from './EventOverlays'
 import { MeteorShower } from './MeteorShower'
 import { OfflineModal } from './OfflineModal'
@@ -93,7 +92,6 @@ export function App() {
     <div className={`app ${shaking ? 'app--shake' : ''}`}>
       <ResourceBar />
       <BuffBar />
-      <EventBanner />
       <QuestPanel />
       <main className="layout">
         <Asteroid />

@@ -15,7 +15,8 @@ export const shardsGain = (state: GameState): number =>
   Math.floor(
     Math.sqrt(state.darkMatter / 10) *
       (1 + 0.1 * talentLevel(state, 'shardResonance')) *
-      (hasSkill(state, 'dark7') ? 1.2 : 1),
+      (hasSkill(state, 'dark7') ? 1.2 : 1) +
+      1e-9,
   )
 
 export function startingBuildings(state: GameState, withShip: boolean): GameState['buildings'] {

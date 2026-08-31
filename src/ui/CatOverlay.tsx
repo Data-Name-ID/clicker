@@ -19,7 +19,7 @@ export function CatOverlay() {
         <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="cat-title">
           <div className="modal frame">
             <h2 id="cat-title">Кот-курьер</h2>
-            <p className="muted">Кот принёс три ящика. Выбирай один — остальные он заберёт себе.</p>
+            <p className="muted">Кот притащил три ящика. Бери один — остальные он оставит себе.</p>
             <div className="cat-boxes">
               {[1, 2, 3].map((i) => (
                 <button type="button" key={i} className="btn cat-box" onClick={chooseCatBox} aria-label={`Ящик ${i}`}>
@@ -27,7 +27,7 @@ export function CatOverlay() {
                 </button>
               ))}
             </div>
-            <div className="actions">
+            <div className="actions cat-actions">
               <AdButton placement="catDouble" label="Открыть два ящика" />
             </div>
           </div>

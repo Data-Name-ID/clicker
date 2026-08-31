@@ -7,18 +7,18 @@ export interface ArtifactDef {
 }
 
 export const ARTIFACTS: ArtifactDef[] = [
-  { id: 'cometShard', name: 'Осколок кометы', description: 'Клик ×3' },
-  { id: 'iridiumVein', name: 'Жила иридия', description: 'Дроны ×2' },
-  { id: 'oldBlueprint', name: 'Старый чертёж', description: 'Здания на 20 % дешевле' },
-  { id: 'focusCrystal', name: 'Кристалл фокуса', description: 'Плавильни дают +50 % сплава' },
-  { id: 'smuggledBooster', name: 'Контрабандный ускоритель', description: 'Кулдауны рекламы ×0,5' },
-  { id: 'darkSeed', name: 'Тёмное семя', description: 'Ядра почти в полтора раза сильнее увеличивают награду перелёта' },
-  { id: 'rustyExcavator', name: 'Ржавый экскаватор', description: 'Экскаваторы ×2,5, но дроны ×0,5' },
-  { id: 'obsidianLens', name: 'Линза обсидиана', description: 'Лазеры ×2' },
-  { id: 'hive', name: 'Улей', description: '+5 % всей добычи за каждые 10 дронов' },
-  { id: 'voidSeal', name: 'Печать пустоты', description: 'Пассивный бонус тёмной материи ×1,5' },
-  { id: 'lotteryTicket', name: 'Билет лотереи', description: 'События в 2 раза чаще' },
-  { id: 'minerHammer', name: 'Молот шахтёра', description: 'Первые 100 кликов забега ×10' },
+  { id: 'cometShard', name: 'Осколок кометы', description: 'Удар бьёт втрое сильнее' },
+  { id: 'iridiumVein', name: 'Жила иридия', description: 'Дроны копают вдвое быстрее' },
+  { id: 'oldBlueprint', name: 'Старый чертёж', description: 'Здания дешевле на пятую часть' },
+  { id: 'focusCrystal', name: 'Кристалл фокуса', description: 'Плавильни дают в полтора раза больше сплава' },
+  { id: 'smuggledBooster', name: 'Контрабандный ускоритель', description: 'Реклама перезаряжается вдвое быстрее' },
+  { id: 'darkSeed', name: 'Тёмное семя', description: 'Ядра ценятся заметно выше при перелёте' },
+  { id: 'rustyExcavator', name: 'Ржавый экскаватор', description: 'Экскаваторы мощнее в 2,5 раза, зато дроны вполсилы' },
+  { id: 'obsidianLens', name: 'Линза обсидиана', description: 'Лазеры бьют вдвое сильнее' },
+  { id: 'hive', name: 'Улей', description: 'Каждые десять дронов добавляют 5 % ко всей добыче' },
+  { id: 'voidSeal', name: 'Печать пустоты', description: 'Тёмная материя действует в полтора раза сильнее' },
+  { id: 'lotteryTicket', name: 'Билет лотереи', description: 'События случаются вдвое чаще' },
+  { id: 'minerHammer', name: 'Молот шахтёра', description: 'Первая сотня ударов забега бьёт вдесятеро' },
 ]
 
 export const artifactDef = (id: ArtifactId): ArtifactDef => ARTIFACTS.find((a) => a.id === id)!

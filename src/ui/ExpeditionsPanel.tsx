@@ -18,10 +18,10 @@ export function ExpeditionsPanel() {
   const free = game.buildings.drone - busyDrones(game)
 
   return (
-    <details className="expeditions">
+    <details className="expeditions" data-tour="expeditions">
       <summary>
         Экспедиции ({game.expeditions.length}/{slots})
-        {game.expeditions.some((e) => isExpeditionReady(e, now)) && <span className="expeditions__ready"> — есть что забрать!</span>}
+        {game.expeditions.some((e) => isExpeditionReady(e, now)) && <span className="expeditions__ready"> — отряд вернулся!</span>}
       </summary>
       {game.expeditions.map((e, i) => {
         const def = expeditionKindDef(e.kind)
@@ -78,7 +78,7 @@ export function ExpeditionsPanel() {
             Отправить (свободно: {free})
           </button>
           <p className="muted expedition-form__hint">
-            15 % шанс провала — вернётся лишь половина отряда. Пока дроны в пути, они не добывают.
+            Каждый седьмой рейд срывается — назад придёт половина отряда. Пока дроны в пути, они не копают.
           </p>
         </div>
       )}

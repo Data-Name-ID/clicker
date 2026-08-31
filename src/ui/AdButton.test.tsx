@@ -15,8 +15,8 @@ describe('AdButton tooltip', () => {
 
     fireEvent.mouseEnter(screen.getByRole('button', { name: 'Перегрузка реактора' }).parentElement!)
 
-    expect(screen.getByRole('tooltip')).toHaveTextContent('Всё производство ×2 на 10 мин.')
-    expect(screen.getByRole('tooltip')).toHaveTextContent('Перезарядка 30 мин после окончания.')
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Всё производство вдвое быстрее — 10 мин.')
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Заряжается 30 мин после окончания.')
   })
 
   it('toggles with the info button for touch screens', () => {
